@@ -23,4 +23,9 @@ spec:
               value: postgres
             - name: POSTGRES_PORT
               value: "5432"
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: secretenv
+                  key: JWT_SECRET
             # Add other environment variables as needed
