@@ -12,6 +12,15 @@ console.log('JWT secret', process.env.JWT_SECRET)
 //   ssl: process.env.NODE_ENV === 'production',
 // });
 
+// Create a PostgreSQL pool
+const pool = new Pool({
+  user: 'admin',
+  host: '10.109.2.89',
+  database: 'postgres',
+  password: 'password',
+  port: 5432 // or the port number you are using
+});
+
 app.use(express.json());
 
 // interface User {
@@ -23,6 +32,88 @@ app.use(express.json());
 app.get('/', async (req: Request, res: Response, next: NextFunction) => {
   return res.status(200).json({message: 'works'})
 })
+
+
+// Register a new user
+app.post('/register', async (req: Request, res: Response) => {
+
+  console.log('register hit')
+  console.log('red body', req.body)
+  try {
+    const { username, password } = req.body;
+
+    // Check if username already exists
+    const existingUser = await pool.query(
+      'SELECT * FROM users WHERE username = $1',
+      [username]
+    );
+
+    if (existingUser.rows.length > 0) {
+      return res.status(400).json({ message: 'Username already exists' });
+    }
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Insert the new user into the database
+    await pool.query(
+      'INSERT INTO users (username, password) VALUES ($1, $2)',
+      [username, hashedPassword]
+    );
+
+    res.status(201).json({ message: 'User registered successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+
+// User login
+app.post('/login', async (req: Request, res: Response) => {
+  console.log('login hit')
+  console.log('req body', req.body)
+  try {
+    const { username, password } = req.body;
+
+    // Retrieve the user from the database
+    const user = await pool.query(
+      'SELECT * FROM users WHERE username = $1',
+      [username]
+    );
+
+    if (user.rows.length === 0) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    // Verify the password
+    const passwordMatch = await bcrypt.compare(
+      password,
+      user.rows[0].password
+    );
+
+    if (!passwordMatch) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    // Generate a JWT token
+    const token = jwt.sign(
+      { userId: user.rows[0].id },
+      'your_secret_key',
+      { expiresIn: '1h' } // Token expiration time
+    );
+
+    res.json({ token });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+
+
+
+
 
 // app.post('/login', async (req: Request, res: Response, next: NextFunction) => {
 //   const { username, password } = req.body;
