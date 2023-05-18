@@ -15,7 +15,7 @@ console.log('JWT secret', process.env.JWT_SECRET)
 // Create a PostgreSQL pool
 const pool = new Pool({
   user: 'admin',
-  host: '10.109.2.89',
+  host: '10.99.78.99',
   database: 'postgres',
   password: 'password',
   port: 5432 // or the port number you are using

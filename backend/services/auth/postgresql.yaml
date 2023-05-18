@@ -14,7 +14,8 @@ spec:
     spec:
       containers:
         - name: postgres
-          image: postgres:13
+          image: authdb:latest
+          imagePullPolicy: Never
           ports:
             - containerPort: 5432
           env:
@@ -23,14 +24,14 @@ spec:
             - name: POSTGRES_PASSWORD
               value: password
             # Add other environment variables as needed
-          volumeMounts:
-            - name: schema-volume
-              mountPath: /docker-entrypoint-initdb.d
-              readOnly: true
-      volumes:
-        - name: schema-volume
-          configMap:
-            name: schema-configmap
+      #     volumeMounts:
+      #       - name: schema-volume
+      #         mountPath: /docker-entrypoint-initdb.d
+      #         readOnly: true
+      # volumes:
+      #   - name: schema-volume
+      #     configMap:
+      #       name: schema-configmap
 
 ---
 
