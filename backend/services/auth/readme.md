@@ -6,4 +6,7 @@ run `bash buildimages.sh`
 run `start.sh` 
 
 # stop all:  
-run `bash stop.sh`
+run `bash stop.sh`  
+
+# TODO:
+add volumes?
