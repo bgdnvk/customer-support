@@ -51,7 +51,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs
-
+# changed ports from 3000 to 5000
 EXPOSE 5000
 
 ENV PORT 5000
