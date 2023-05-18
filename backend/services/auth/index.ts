@@ -7,6 +7,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 console.log('JWT secret', process.env.JWT_SECRET)
+console.log('postgres service host', process.env.POSTGRES_SERVICE_HOST)
 // const pool = new Pool({
 //   connectionString: process.env.DATABASE_URL,
 //   ssl: process.env.NODE_ENV === 'production',
@@ -15,7 +16,7 @@ console.log('JWT secret', process.env.JWT_SECRET)
 // Create a PostgreSQL pool
 const pool = new Pool({
   user: 'admin',
-  host: '10.99.78.99',
+  host: process.env.POSTGRES_SERVICE_HOST,
   database: 'postgres',
   password: 'password',
   port: 5432 // or the port number you are using
