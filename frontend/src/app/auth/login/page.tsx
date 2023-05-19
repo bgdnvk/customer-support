@@ -18,6 +18,8 @@ export default function Login() {
       if (response.ok) {
         const data = await response.json();
         console.log('Login successful. Token:', data.token);
+        //setting up the cookie
+        document.cookie = `CStoken=${data.token}`
       } else {
         const data = await response.json();
         console.log('Login failed:', data.message);

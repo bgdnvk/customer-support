@@ -1,5 +1,5 @@
 import express, { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { Pool } from "pg";
 import cors from "cors";
@@ -95,7 +95,7 @@ app.post("/api/login", async (req: Request, res: Response) => {
     // Generate a JWT token
     const token = jwt.sign(
       { userId: user.rows[0].id },
-      "your_secret_key",
+      `${process.env.JWT_SECRET}`,
       { expiresIn: "1h" } // Token expiration time
     );
 
@@ -137,21 +137,29 @@ app.post("/api/login", async (req: Request, res: Response) => {
 //   }
 // });
 
-// app.get('/protected', (req: Request, res: Response, next: NextFunction) => {
-//   const token = req.headers.authorization?.split(' ')[1];
+app.get("/protected", (req: Request, res: Response, next: NextFunction) => {
+  const token = req.headers.authorization?.split(" ")[1];
 
-//   if (!token) {
-//     return res.status(401).json({ message: 'Missing authorization header' });
-//   }
+  if (!token) {
+    return res.status(401).json({ message: "Missing authorization header" });
+  }
 
-//   try {
-//     // Verify the JWT and extract the user ID
-//     const { userId } = jwt.verify(token, process.env.JWT_SECRET) as { userId: number };
-//     res.json({ message: `Protected data for user ${userId}` });
-//   } catch (err) {
-//     next(err);
-//   }
-// });
+  type tokenPayload = {
+    userId: string | JwtPayload;
+  };
+
+  try {
+    // Verify the JWT and extract the user ID
+    const { userId } = jwt.verify(
+      token,
+      `${process.env.JWT_SECRET}`
+    ) as tokenPayload;
+
+    res.json({ message: `Protected data for user ${userId}` });
+  } catch (err) {
+    next(err);
+  }
+});
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error(err.stack);
