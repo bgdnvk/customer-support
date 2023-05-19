@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react';
 
-export default function Login() {
+export default function Login({setSession}: {setSession: any}) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
@@ -19,7 +19,10 @@ export default function Login() {
         const data = await response.json();
         console.log('Login successful. Token:', data.token);
         //setting up the cookie
-        document.cookie = `CStoken=${data.token}`
+        //
+        const myCookie: string = `CStoken=${data.token}; path=/`
+        document.cookie = `CStoken=${data.token}; path=/`
+        setSession(myCookie)
       } else {
         const data = await response.json();
         console.log('Login failed:', data.message);
