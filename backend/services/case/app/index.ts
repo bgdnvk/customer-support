@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import { verifyUser } from "./middleware";
+import { verifyAdmin, verifyAgent, verifyCustomer, verifyUser } from "./middleware";
 
 const app = express();
 app.use(cors());
@@ -20,6 +20,18 @@ let cases: Case[] = [
 
 app.get("/verify", verifyUser, (req, res) => {
     res.json("success")
+})
+
+app.get("/verify/customer", verifyCustomer, (req, res) => {
+    res.json("customer verified")
+})
+
+app.get("/verify/agent", verifyAgent, (req, res) => {
+    res.json("agent verified")
+})
+
+app.get("/verify/admin", verifyAdmin, (req, res) => {
+    res.json("admin verified")
 })
 
 app.get("/cases", (req, res) => {

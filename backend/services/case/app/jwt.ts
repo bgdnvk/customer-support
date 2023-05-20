@@ -4,9 +4,9 @@ dotenv.config();
 
 const secret = `${process.env.JWT}`;
 
-export function generateToken(payload: any): string {
-    return jwt.sign(payload, secret);
-}
+// export function generateToken(payload: any): string {
+//     return jwt.sign(payload, secret);
+// }
 
 export function verifyToken(token: string): any {
     try {
