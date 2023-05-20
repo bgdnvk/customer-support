@@ -1,7 +1,7 @@
 # issue w/ encoding
 docker stop authdb
 docker rm authdb
-docker build -t authdb:latest -f ./db/Dockerfile.db ./db  
+docker build -t authdb:latest -f ./db/Dockerfile.db ./db
 # issue w/ encoding 
 docker stop authservice
 docker rm authservice
