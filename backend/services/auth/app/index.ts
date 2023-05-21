@@ -20,7 +20,7 @@ const pool = new Pool({
     host: process.env.POSTGRES_SERVICE_HOST,
     database: "postgres",
     password: "password",
-    port: 5432, // or the port number you are using
+    port: 5432,
 });
 
 app.use(cors());

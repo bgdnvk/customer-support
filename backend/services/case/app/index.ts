@@ -1,75 +1,102 @@
-import express from "express";
-import cors from "cors";
-import { verifyAdmin, verifyAgent, verifyCustomer, verifyUser } from "./middleware";
+import express, { Request, Response } from "express";
+import { Pool } from "pg";
+import { verifyAgent, verifyCustomer } from "./middleware";
+
+const pool = new Pool({
+    user: "admin",
+    host: process.env.POSTGRES_SERVICE_HOST,
+    database: "postgres",
+    password: "password",
+    port: 5432,
+});
 
 const app = express();
-app.use(cors());
 app.use(express.json());
 
-interface Case {
-    id: number;
-    title: string;
-    description: string;
-}
-
-let cases: Case[] = [
-    { id: 1, title: "Case 1", description: "This is case 1" },
-    { id: 2, title: "Case 2", description: "This is case 2" },
-    { id: 3, title: "Case 3", description: "This is case 3" },
-];
-
-app.get("/verify", verifyUser, (req, res) => {
-    res.json("success")
-})
-
-app.get("/verify/customer", verifyCustomer, (req, res) => {
-    res.json("customer verified")
-})
-
-app.get("/verify/agent", verifyAgent, (req, res) => {
-    res.json("agent verified")
-})
-
-app.get("/verify/admin", verifyAdmin, (req, res) => {
-    res.json("admin verified")
-})
-
-app.get("/cases", (req, res) => {
-    res.json(cases);
-});
-
-app.post("/cases", (req, res) => {
-    const { title, description } = req.body;
-    const id = cases.length + 1;
-    const newCase = { id, title, description };
-    cases.push(newCase);
-    res.json(newCase);
-});
-
-app.put("/cases/:id", (req, res) => {
-    const id = parseInt(req.params.id);
-    const { title, description } = req.body;
-    const index = cases.findIndex((c) => c.id === id);
-    if (index !== -1) {
-        cases[index] = { id, title, description };
-        res.json(cases[index]);
-    } else {
-        res.status(404).json({ message: `Case with id ${id} not found` });
+// Get all cases
+app.get("/cases", verifyAgent, async (req: Request, res: Response) => {
+    try {
+        const { rows } = await pool.query("SELECT * FROM cases");
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Internal server error" });
     }
 });
 
-app.delete("/cases/:id", (req, res) => {
-    const id = parseInt(req.params.id);
-    const index = cases.findIndex((c) => c.id === id);
-    if (index !== -1) {
-        cases.splice(index, 1);
-        res.json({ message: `Case with id ${id} deleted` });
-    } else {
-        res.status(404).json({ message: `Case with id ${id} not found` });
+// Get a single case by ID
+// app.get("/cases/:id", async (req: Request, res: Response) => {
+//     const { id } = req.params;
+//     try {
+//         const { rows } = await pool.query("SELECT * FROM cases WHERE id = $1", [
+//             id,
+//         ]);
+//         if (rows.length === 0) {
+//             res.status(404).json({ error: "Case not found" });
+//         } else {
+//             res.json(rows[0]);
+//         }
+//     } catch (err) {
+//         console.error(err);
+//         res.status(500).json({ error: "Internal server error" });
+//     }
+// });
+
+// Create a new case
+app.post("/cases", verifyCustomer, async (req: Request, res: Response) => {
+    //TODO: add user_id in req from middleware
+    const { title, description, user_id } = req.body;
+    try {
+        const { rows } = await pool.query(
+            "INSERT INTO cases (title, description, user_id) VALUES ($1, $2, $3) RETURNING *",
+            [title, description, user_id]
+        );
+        res.status(201).json(rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Internal server error" });
     }
 });
 
-const port = process.env.PORT || 4000;
-app.listen(port, () => {
-    console.log(`Server listening on port ${port}`);
+// Update an existing case
+app.put("/cases/:id", verifyAgent, async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { title, description, resolved } = req.body;
+    try {
+        const { rows } = await pool.query(
+            "UPDATE cases SET title = $1, description = $2, resolved = $3 WHERE id = $4 RETURNING *",
+            [title, description, resolved, id]
+        );
+        if (rows.length === 0) {
+            res.status(404).json({ error: "Case not found" });
+        } else {
+            res.json(rows[0]);
+        }
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+// Delete a case by ID
+// app.delete("/cases/:id", async (req: Request, res: Response) => {
+//     const { id } = req.params;
+//     try {
+//         const { rows } = await pool.query(
+//             "DELETE FROM cases WHERE id = $1 RETURNING *",
+//             [id]
+//         );
+//         if (rows.length === 0) {
+//             res.status(404).json({ error: "Case not found" });
+//         } else {
+//             res.json(rows[0]);
+//         }
+//     } catch (err) {
+//         console.error(err);
+//         res.status(500).json({ error: "Internal server error" });
+//     }
+// });
+
+app.listen(4000, () => {
+    console.log("Server listening on port 4000");
 });
