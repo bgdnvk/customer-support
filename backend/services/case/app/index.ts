@@ -43,19 +43,29 @@ app.get("/cases", verifyAgent, async (req: Request, res: Response) => {
 // });
 
 // Create a new case
-app.post("/cases", verifyCustomer, async (req: Request, res: Response) => {
+app.post("/cases", verifyCustomer, (req: Request, res: Response) => {
     //TODO: add user_id in req from middleware
-    const { title, description, user_id } = req.body;
-    try {
-        const { rows } = await pool.query(
-            "INSERT INTO cases (title, description, user_id) VALUES ($1, $2, $3) RETURNING *",
-            [title, description, user_id]
-        );
-        res.status(201).json(rows[0]);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "Internal server error" });
-    }
+    console.log("req body", req.body);
+    const { title, description, resolved, payload} = req.body;
+    console.log("cases hit");
+    console.log("title", title);
+    console.log("desc", description);
+    console.log('resolved', resolved)
+    const user_id = payload.userId
+    const user_role = payload.role
+    console.log("user_id", user_id);
+    console.log("user_id", user_role);
+    // try {
+    //     const { rows } = await pool.query(
+    //         "INSERT INTO cases (title, description, user_id) VALUES ($1, $2, $3) RETURNING *",
+    //         [title, description, user_id]
+    //     );
+    //     res.status(201).json(rows[0]);
+    // } catch (err) {
+    //     console.error(err);
+    //     res.status(500).json({ error: "Internal server error" });
+    // }
+    return res.status(200).json({title, description, resolved, user_id, user_role})
 });
 
 // Update an existing case

@@ -22,18 +22,23 @@ export function verifyUser(req: Request, res: Response, next: NextFunction) {
     next();
 }
 
-//TODO: add user id in request
-export function verifyCustomer(req: Request, res: Response, next: NextFunction) {
+export function verifyCustomer(
+    req: Request,
+    res: Response,
+    next: NextFunction
+) {
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) {
         return res.status(401).json({ message: "Unauthorized" });
     }
     const payload = verifyToken(token);
-    if (!payload || payload.role !== 'customer') {
+    if (!payload || payload.role !== "customer") {
         return res.status(401).json({ message: "Unauthorized" });
     }
+    //TODO: remove
     console.log("payload", payload);
-    // req.user = payload;
+    req.body.payload = payload;
+
     next();
 }
 
@@ -43,7 +48,7 @@ export function verifyAgent(req: Request, res: Response, next: NextFunction) {
         return res.status(401).json({ message: "Unauthorized" });
     }
     const payload = verifyToken(token);
-    if (!payload || payload.role !== 'agent') {
+    if (!payload || payload.role !== "agent") {
         return res.status(401).json({ message: "Unauthorized" });
     }
     console.log("payload", payload);
@@ -57,7 +62,7 @@ export function verifyAdmin(req: Request, res: Response, next: NextFunction) {
         return res.status(401).json({ message: "Unauthorized" });
     }
     const payload = verifyToken(token);
-    if (!payload || payload.role !== 'admin') {
+    if (!payload || payload.role !== "admin") {
         return res.status(401).json({ message: "Unauthorized" });
     }
     console.log("payload", payload);
