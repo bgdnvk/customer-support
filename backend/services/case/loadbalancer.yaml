@@ -5,7 +5,7 @@ metadata:
 spec:
   type: LoadBalancer
   selector:
-    app: node-app
+    app: node-case
   ports:
     - protocol: TCP
       port: 4000

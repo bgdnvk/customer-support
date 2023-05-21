@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: node-case
-          image: authservice:latest
+          image: caseservice:latest
           imagePullPolicy: Never
           ports:
             - containerPort: 4000
