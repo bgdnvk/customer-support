@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 import { Pool } from "pg";
 import { verifyAgent, verifyCustomer } from "./middleware";
 import axios from "axios";
+import { get } from "http";
 import cors from "cors";
 
 const pool = new Pool({
@@ -19,7 +20,9 @@ app.use(express.json());
 app.get("/api/test", async (req: Request, res: Response) => {
     console.log("test hit");
 
-    const url = "http://localhost:5000/api/test";
+    // const url = "http://localhost:5000/api/test";
+    const url = `http://${process.env.LB_AGENT_SERVICE_HOST}/api/test`
+    console.log(url)
 
     const token = req.headers.authorization?.split(" ")[1];
 
@@ -36,6 +39,44 @@ app.get("/api/test", async (req: Request, res: Response) => {
         console.log("err", e);
     }
 });
+
+
+// app.get("/api/test", async (req: Request, res: Response) => {
+//   console.log("test hit");
+
+//   const url = "http://localhost:5000/api/test";
+
+//   const token = req.headers.authorization?.split(" ")[1];
+
+//   console.log("token", token);
+//   const headers = {
+//     Authorization: `Bearer ${token}`,
+//   };
+
+//   const options = {
+//     headers,
+//   };
+
+//   const request = get(url, options, (response) => {
+//     let data = "";
+
+//     response.on("data", (chunk) => {
+//       data += chunk;
+//     });
+
+//     response.on("end", () => {
+//       console.log(data);
+//       res.json(JSON.parse(data));
+//     });
+//   });
+
+//   request.on("error", (error) => {
+//     console.error(error);
+//     res.status(500).send("Internal Server Error");
+//   });
+
+//   request.end();
+// });
 
 // Get all cases as an agent
 app.get("/api/cases", verifyAgent, async (req: Request, res: Response) => {
