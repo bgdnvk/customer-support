@@ -59,7 +59,7 @@ app.post("/api/cases", verifyCustomer, async (req: Request, res: Response) => {
 });
 
 // Update an existing case as an agent (resolve it basically)
-app.put("/cases/:id", verifyAgent, async (req: Request, res: Response) => {
+app.put("/api/cases/:id", verifyAgent, async (req: Request, res: Response) => {
     const { id } = req.params;
     // const { title, description, resolved } = req.body;
     const { resolved } = req.body;
