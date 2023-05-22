@@ -13,7 +13,7 @@ const pool = new Pool({
 const app = express();
 app.use(express.json());
 
-// Get all cases
+// Get all cases as an agent
 app.get("/api/cases", verifyAgent, async (req: Request, res: Response) => {
     try {
         const { rows } = await pool.query("SELECT * FROM cases");
@@ -42,7 +42,7 @@ app.get("/api/cases", verifyAgent, async (req: Request, res: Response) => {
 //     }
 // });
 
-// Create a new case
+// Create a new case as a customer
 app.post("/api/cases", verifyCustomer, async (req: Request, res: Response) => {
     //TODO: add user_id in req from middleware
     const { title, description, payload } = req.body;
@@ -59,7 +59,7 @@ app.post("/api/cases", verifyCustomer, async (req: Request, res: Response) => {
     }
 });
 
-// Update an existing case
+// Update an existing case as an agent (resolve it basically)
 app.put("/cases/:id", verifyAgent, async (req: Request, res: Response) => {
     const { id } = req.params;
     const { title, description, resolved } = req.body;
