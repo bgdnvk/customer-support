@@ -23,14 +23,32 @@ export function verifyCustomer(
     res: Response,
     next: NextFunction
 ) {
-    console.log('middleware hit')
+    console.log("middleware hit");
     const token = req.headers.authorization?.split(" ")[1];
-    console.log('token', token)
+    console.log("token", token);
     if (!token) {
         return res.status(401).json({ message: "Unauthorized" });
     }
     const payload = verifyToken(token);
     if (!payload || payload.role !== "customer") {
+        return res.status(401).json({ message: "Unauthorized" });
+    }
+    //TODO: remove
+    console.log("payload", payload);
+    req.body.payload = payload;
+
+    next();
+}
+
+export function verifyAdmin(req: Request, res: Response, next: NextFunction) {
+    console.log("middleware hit");
+    const token = req.headers.authorization?.split(" ")[1];
+    console.log("token", token);
+    if (!token) {
+        return res.status(401).json({ message: "Unauthorized" });
+    }
+    const payload = verifyToken(token);
+    if (!payload || payload.role !== "admin") {
         return res.status(401).json({ message: "Unauthorized" });
     }
     //TODO: remove
