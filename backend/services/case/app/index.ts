@@ -44,7 +44,6 @@ app.get("/api/cases", verifyAgent, async (req: Request, res: Response) => {
 
 // Create a new case as a customer
 app.post("/api/cases", verifyCustomer, async (req: Request, res: Response) => {
-    //TODO: add user_id in req from middleware
     const { title, description, payload } = req.body;
     const user_id = payload.userId;
     try {
@@ -62,11 +61,16 @@ app.post("/api/cases", verifyCustomer, async (req: Request, res: Response) => {
 // Update an existing case as an agent (resolve it basically)
 app.put("/cases/:id", verifyAgent, async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { title, description, resolved } = req.body;
+    // const { title, description, resolved } = req.body;
+    const { resolved } = req.body;
     try {
+        // const { rows } = await pool.query(
+        //     "UPDATE cases SET title = $1, description = $2, resolved = $3 WHERE id = $4 RETURNING *",
+        //     [title, description, resolved, id]
+        // );
         const { rows } = await pool.query(
-            "UPDATE cases SET title = $1, description = $2, resolved = $3 WHERE id = $4 RETURNING *",
-            [title, description, resolved, id]
+            "UPDATE cases SET resolved = $1 WHERE id = $2 RETURNING *",
+            [resolved, id]
         );
         if (rows.length === 0) {
             res.status(404).json({ error: "Case not found" });
