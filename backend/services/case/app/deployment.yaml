@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node-case
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: node-case
+  template:
+    metadata:
+      labels:
+        app: node-case
+    spec:
+      containers:
+        - name: node-case
+          image: caseservice:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 4000
+          env:
+            - name: POSTGRES_HOST
+              value: postgres
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: secretenv
+                  key: JWT_SECRET
+            # Add other environment variables as needed

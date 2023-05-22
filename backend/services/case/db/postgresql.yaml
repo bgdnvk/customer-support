@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-case
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-case
+  template:
+    metadata:
+      labels:
+        app: postgres-case
+    spec:
+      containers:
+        - name: postgres-case
+          image: casedb:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: admin
+            - name: POSTGRES_PASSWORD
+              value: password
+            # Add other environment variables as needed
+      #     volumeMounts:
+      #       - name: schema-volume
+      #         mountPath: /docker-entrypoint-initdb.d
+      #         readOnly: true
+      # volumes:
+      #   - name: schema-volume
+      #     configMap:
+      #       name: schema-configmap
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-case
+spec:
+  selector:
+    app: postgres-case
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
