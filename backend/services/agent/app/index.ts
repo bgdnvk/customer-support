@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { verifyCustomer } from './middleware';
 
 dotenv.config();
 
@@ -8,7 +9,7 @@ const app = express();
 
 app.use(cors());
 
-app.get('/', (req, res) => {
+app.get('/api/test', verifyCustomer, async (req, res) => {
   res.send('Hello, World!');
 });
 

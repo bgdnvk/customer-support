@@ -1,3 +1,3 @@
-docker stop caseservice
-docker rm caseservice
-docker build -t caseservice:latest -f Dockerfile.app .
+docker stop agentservice 
+docker rm agentservice
+docker build -t agentservice:latest -f Dockerfile.app .

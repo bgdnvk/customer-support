@@ -1,6 +1,8 @@
 import express, { Request, Response } from "express";
 import { Pool } from "pg";
 import { verifyAgent, verifyCustomer } from "./middleware";
+import axios from "axios";
+import cors from "cors";
 
 const pool = new Pool({
     user: "admin",
@@ -11,7 +13,29 @@ const pool = new Pool({
 });
 
 const app = express();
+app.use(cors());
 app.use(express.json());
+
+app.get("/api/test", async (req: Request, res: Response) => {
+    console.log("test hit");
+
+    const url = "http://localhost:5000/api/test";
+
+    const token = req.headers.authorization?.split(" ")[1];
+
+    console.log("token", token);
+    const headers = {
+        Authorization: `Bearer ${token}`,
+    };
+
+    try {
+        const response = await axios.get(url, { headers });
+        console.log(response);
+        res.json(response);
+    } catch (e) {
+        console.log("err", e);
+    }
+});
 
 // Get all cases as an agent
 app.get("/api/cases", verifyAgent, async (req: Request, res: Response) => {
