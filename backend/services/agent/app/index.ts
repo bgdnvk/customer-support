@@ -10,9 +10,9 @@ const app = express();
 
 app.use(cors());
 
-// app.get("/api/agent/test", verifyCustomer, async (req, res) => {
-//     res.send("Hello, World!");
-// });
+app.get("/api/agent/test", verifyCustomer, async (req, res) => {
+    res.send("Hello, World!");
+});
 
 app.use(express.json());
 
@@ -25,6 +25,7 @@ const pool = new Pool({
 });
 
 // With a new case an agent will be assigned
+// the call comes from the customer service that adds a case
 app.post(
     "/api/agent/case",
     verifyCustomer,
@@ -86,7 +87,7 @@ app.post(
 
 // create agent and make the agent available
 app.post(
-    "/api/agent/create",
+    "/api/agent",
     verifyAgent,
     async (req: Request, res: Response) => {
         const { user_id, name, title, description } = req.body;

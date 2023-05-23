@@ -20,15 +20,15 @@ app.use(express.json());
 app.get("/api/test", async (req: Request, res: Response) => {
     console.log("test hit");
 
-    // const url = "http://localhost:5000/api/test";
-    const url = `http://${process.env.LB_AGENT_SERVICE_HOST}:${process.env.LB_AGENT_SERVICE_PORT}/api/test`
-    console.log(url)
+    // const url = "http://localhost:5000/api/test";LB_AGENT_SERVICE_HOST
+    const url = `http://${process.env.LB_AGENT_SERVICE_HOST}:${process.env.LB_AGENT_SERVICE_PORT}/api/agent/test`;
+    console.log(url);
 
     const token = req.headers.authorization?.split(" ")[1];
 
     console.log("token", token);
     const headers = {
-        Authorization: `Bearer ${token}`,
+        authorization: `bearer ${token}`,
     };
 
     try {
@@ -39,7 +39,6 @@ app.get("/api/test", async (req: Request, res: Response) => {
         console.log("err", e);
     }
 });
-
 
 // app.get("/api/test", async (req: Request, res: Response) => {
 //   console.log("test hit");
@@ -79,7 +78,7 @@ app.get("/api/test", async (req: Request, res: Response) => {
 // });
 
 // Get all cases as an agent
-app.get("/api/cases", verifyAgent, async (req: Request, res: Response) => {
+app.get("/api/case", verifyAgent, async (req: Request, res: Response) => {
     try {
         const { rows } = await pool.query("SELECT * FROM cases");
         res.json(rows);
@@ -108,7 +107,9 @@ app.get("/api/cases", verifyAgent, async (req: Request, res: Response) => {
 // });
 
 // Create a new case as a customer
-app.post("/api/cases", verifyCustomer, async (req: Request, res: Response) => {
+// TODO:
+app.post("/api/case", verifyCustomer, async (req: Request, res: Response) => {
+    console.log("case hit");
     const { title, description, payload } = req.body;
     const user_id = payload.userId;
     try {
@@ -116,6 +117,29 @@ app.post("/api/cases", verifyCustomer, async (req: Request, res: Response) => {
             "INSERT INTO cases (title, description, user_id) VALUES ($1, $2, $3) RETURNING *",
             [title, description, user_id]
         );
+
+        //pass the case to /api/agent
+
+        const url = `http://${process.env.LB_AGENT_SERVICE_HOST}:${process.env.LB_AGENT_SERVICE_PORT}/api/agent/case`;
+        // const url = `http://${process.env.lb_agent_service_host}:${process.env.lb_agent_service_port}/api/agent/case`;
+        console.log(url);
+
+        const token = req.headers.authorization?.split(" ")[1];
+
+        console.log("token", token);
+        const headers = {
+            authorization: `bearer ${token}`,
+        };
+        
+        const myCase = rows[0]
+        console.log('case is', myCase)
+        const data = { case_id: myCase.id }
+
+        const response = await axios.post(url, data, { headers });
+        console.log(response.data);
+        res.json(response.data);
+
+        //return inserted case
         res.status(201).json(rows[0]);
     } catch (err) {
         console.error(err);
