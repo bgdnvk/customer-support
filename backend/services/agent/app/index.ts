@@ -79,7 +79,7 @@ app.post("/api/agent/case", async (req: Request, res: Response) => {
 });
 
 // create agent and make the agent available
-app.post("/api/agent/create", async (req: Request, res: Response) => {
+app.post("/api/agent/create", verifyAgent, async (req: Request, res: Response) => {
     const { user_id, username, name, title, description } = req.body;
 
     try {
@@ -102,21 +102,21 @@ app.post("/api/agent/create", async (req: Request, res: Response) => {
 });
 
 // Add agent
-app.post("/api/agent/new", verifyAgent, async (req: Request, res: Response) => {
-    const { user_id, username, name, title, description } = req.body;
+// app.post("/api/agent/new", verifyAgent, async (req: Request, res: Response) => {
+//     const { user_id, username, name, title, description } = req.body;
 
-    try {
-        const result = await pool.query(
-            "INSERT INTO agents (user_id, username, name, title, description) VALUES ($1, $2, $3, $4, $5) RETURNING *",
-            [user_id, username, name, title, description]
-        );
+//     try {
+//         const result = await pool.query(
+//             "INSERT INTO agents (user_id, username, name, title, description) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+//             [user_id, username, name, title, description]
+//         );
 
-        res.status(201).json(result.rows[0]);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Internal server error" });
-    }
-});
+//         res.status(201).json(result.rows[0]);
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ message: "Internal server error" });
+//     }
+// });
 
 // Edit agent
 app.put("/api/agent/agents/:id", async (req: Request, res: Response) => {

@@ -57,6 +57,9 @@ export function verifyAgent(req: Request, res: Response, next: NextFunction) {
     //make sure the req body is defined as I will be passing data through it
     req.body = req.body || {};
     req.body.payload = payload;
+    //adding the info into the next req for the endpoint to extract
+    req.body.user_id = payload.userId
+    req.body.role = payload.role
     next();
 }
 export function verifyAdmin(req: Request, res: Response, next: NextFunction) {
