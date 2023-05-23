@@ -2,7 +2,7 @@ import express, { Request, Response } from "express";
 import { Pool } from "pg";
 import cors from "cors";
 import dotenv from "dotenv";
-import { verifyCustomer } from "./middleware";
+import { verifyAgent, verifyCustomer } from "./middleware";
 
 dotenv.config();
 
@@ -102,7 +102,7 @@ app.post("/api/agent/create", async (req: Request, res: Response) => {
 });
 
 // Add agent
-app.post("/api/agent/new", async (req: Request, res: Response) => {
+app.post("/api/agent/new", verifyAgent, async (req: Request, res: Response) => {
     const { user_id, username, name, title, description } = req.body;
 
     try {
