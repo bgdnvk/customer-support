@@ -1,11 +1,10 @@
 CREATE TABLE agents (
   id SERIAL PRIMARY KEY,
   user_id INTEGER NOT NULL,
-  username VARCHAR(255) NOT NULL,
   name VARCHAR(255),
   title VARCHAR(255),
   description TEXT,
-  UNIQUE (user_id, username)
+  UNIQUE (user_id)
 );
 
 CREATE TABLE available (
