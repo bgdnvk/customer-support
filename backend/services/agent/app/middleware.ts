@@ -35,6 +35,8 @@ export function verifyCustomer(
     }
     //TODO: remove
     console.log("payload", payload);
+    //make sure the req body is defined
+    req.body = req.body || {};
     req.body.payload = payload;
 
     next();
