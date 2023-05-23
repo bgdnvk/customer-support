@@ -57,12 +57,19 @@ app.post("/api/register", async (req: Request, res: Response) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // Insert the new user into the database
-        await pool.query(
-            "INSERT INTO users (username, password, role) VALUES ($1, $2, $3)",
+        const newUser = await pool.query(
+            "INSERT INTO users (username, password, role) VALUES ($1, $2, $3) RETURNING id",
             [username, hashedPassword, role]
         );
 
+        const userId = newUser.rows[0].id;
+
+        //TODO: maybe make a call to login?
+
         //TODO: add agent call to register agent
+        // transform this into an event
+        if (role === "agent") {
+        }
 
         res.status(201).json({ message: "User registered successfully" });
     } catch (err) {
