@@ -21,7 +21,7 @@ app.get("/api/test", async (req: Request, res: Response) => {
     console.log("test hit");
 
     // const url = "http://localhost:5000/api/test";
-    const url = `http://${process.env.LB_AGENT_SERVICE_HOST}/api/test`
+    const url = `http://${process.env.LB_AGENT_SERVICE_HOST}:${process.env.LB_AGENT_SERVICE_PORT}/api/test`
     console.log(url)
 
     const token = req.headers.authorization?.split(" ")[1];
@@ -33,8 +33,8 @@ app.get("/api/test", async (req: Request, res: Response) => {
 
     try {
         const response = await axios.get(url, { headers });
-        console.log(response);
-        res.json(response);
+        console.log(response.data);
+        res.json(response.data);
     } catch (e) {
         console.log("err", e);
     }

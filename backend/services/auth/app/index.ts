@@ -62,6 +62,8 @@ app.post("/api/register", async (req: Request, res: Response) => {
             [username, hashedPassword, role]
         );
 
+        //TODO: add agent call to register agent
+
         res.status(201).json({ message: "User registered successfully" });
     } catch (err) {
         console.error(err);

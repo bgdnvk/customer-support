@@ -23,7 +23,7 @@ export function verifyCustomer(
     res: Response,
     next: NextFunction
 ) {
-    console.log("middleware hit");
+    console.log("middleware hit verify customer");
     const token = req.headers.authorization?.split(" ")[1];
     console.log("token", token);
     if (!token) {
@@ -35,11 +35,33 @@ export function verifyCustomer(
     }
     //TODO: remove
     console.log("payload", payload);
+    //make sure the req body is defined as I will be passing data through it
+    req.body = req.body || {};
     req.body.payload = payload;
-
     next();
 }
 
+export function verifyAgent(req: Request, res: Response, next: NextFunction) {
+    console.log("middleware hit verify agent");
+    const token = req.headers.authorization?.split(" ")[1];
+    console.log("token", token);
+    if (!token) {
+        return res.status(401).json({ message: "Unauthorized" });
+    }
+    const payload = verifyToken(token);
+    if (!payload || payload.role !== "agent") {
+        return res.status(401).json({ message: "Unauthorized" });
+    }
+    //TODO: remove
+    console.log("payload", payload);
+    //make sure the req body is defined as I will be passing data through it
+    req.body = req.body || {};
+    // req.body.payload = payload;
+    //adding the info into the next req for the endpoint to extract
+    req.body.user_id = payload.userId
+    req.body.role = payload.role
+    next();
+}
 export function verifyAdmin(req: Request, res: Response, next: NextFunction) {
     console.log("middleware hit");
     const token = req.headers.authorization?.split(" ")[1];
