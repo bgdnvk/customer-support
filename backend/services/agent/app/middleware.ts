@@ -23,7 +23,7 @@ export function verifyCustomer(
     res: Response,
     next: NextFunction
 ) {
-    console.log("middleware hit");
+    console.log("middleware hit verify customer");
     const token = req.headers.authorization?.split(" ")[1];
     console.log("token", token);
     if (!token) {
@@ -35,10 +35,9 @@ export function verifyCustomer(
     }
     //TODO: remove
     console.log("payload", payload);
-    //make sure the req body is defined
+    //make sure the req body is defined as I will be passing data through it
     req.body = req.body || {};
     req.body.payload = payload;
-
     next();
 }
 

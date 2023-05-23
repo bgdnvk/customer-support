@@ -10,22 +10,22 @@ const app = express();
 
 app.use(cors());
 
-app.get("/api/test", verifyCustomer, async (req, res) => {
+app.get("/api/agent/test", verifyCustomer, async (req, res) => {
     res.send("Hello, World!");
 });
 
 app.use(express.json());
 
 const pool = new Pool({
-    user: "your_username",
-    host: "your_host",
-    database: "your_database",
-    password: "your_password",
+    user: "admin",
+    host: process.env.POSTGRES_AGENT_SERVICE_HOST,
+    database: "postgres",
+    password: "password",
     port: 5432,
 });
 
 // With a new case an agent will be assigned
-app.post("/api/case", async (req: Request, res: Response) => {
+app.post("/api/agent/case", async (req: Request, res: Response) => {
     const { case_id } = req.body;
     //https://node-postgres.com/features/transactions#asyncawait
     const client = await pool.connect();
@@ -79,7 +79,7 @@ app.post("/api/case", async (req: Request, res: Response) => {
 });
 
 // create agent and make the agent available
-app.post("/api/create", async (req: Request, res: Response) => {
+app.post("/api/agent/create", async (req: Request, res: Response) => {
     const { user_id, username, name, title, description } = req.body;
 
     try {
@@ -102,7 +102,7 @@ app.post("/api/create", async (req: Request, res: Response) => {
 });
 
 // Add agent
-app.post("/api/agents", async (req: Request, res: Response) => {
+app.post("/api/agent/new", async (req: Request, res: Response) => {
     const { user_id, username, name, title, description } = req.body;
 
     try {
@@ -119,7 +119,7 @@ app.post("/api/agents", async (req: Request, res: Response) => {
 });
 
 // Edit agent
-app.put("/api/agents/:id", async (req: Request, res: Response) => {
+app.put("/api/agent/agents/:id", async (req: Request, res: Response) => {
     const { id } = req.params;
     const { user_id, username, name, title, description } = req.body;
 
@@ -141,7 +141,7 @@ app.put("/api/agents/:id", async (req: Request, res: Response) => {
 });
 
 // Remove agent
-app.delete("/api/agents/:id", async (req: Request, res: Response) => {
+app.delete("/api/agent/agents/:id", async (req: Request, res: Response) => {
     const { id } = req.params;
 
     try {
