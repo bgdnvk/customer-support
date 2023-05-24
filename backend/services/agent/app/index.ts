@@ -88,10 +88,11 @@ app.post(
 // create agent and make the agent available
 app.post(
     "/api/agent",
-    verifyAgent,
     async (req: Request, res: Response) => {
+        console.log('api agent hit')
         const { user_id, name, title, description } = req.body;
 
+        console.log('user id', user_id)
         try {
             const agentResult = await pool.query(
                 "INSERT INTO agents (user_id, name, title, description) VALUES ($1, $2, $3, $4) RETURNING id",

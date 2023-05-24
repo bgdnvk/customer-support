@@ -3,6 +3,7 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { Pool } from "pg";
 import cors from "cors";
+import axios from "axios";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -62,16 +63,23 @@ app.post("/api/register", async (req: Request, res: Response) => {
             [username, hashedPassword, role]
         );
 
-        const userId = newUser.rows[0].id;
-
         //TODO: maybe make a call to login?
-
         //TODO: add agent call to register agent
         // transform this into an event
+        // if the user is an agent then call the agent service
         if (role === "agent") {
-        }
 
-        res.status(201).json({ message: "User registered successfully" });
+            const url = `http://${process.env.LB_AGENT_SERVICE_HOST}:${process.env.LB_AGENT_SERVICE_PORT}/api/agent`;
+            console.log("user is agent");
+            const userId = newUser.rows[0].id;
+            const data = { user_id: userId };
+            const response = await axios.post(url, data);
+            console.log("res from agent", response);
+            res.status(201).json({ message: "Agend added" });
+        } else {
+            //for any other type of user
+            res.status(201).json({ message: "User registered successfully" });
+        }
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: "Internal server error" });
