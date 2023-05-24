@@ -21,6 +21,8 @@ Each (micro) service has ./app folder and ./db with their own docker images, bui
 Since I'm using env vars first you need to make a JWT secret and add it to kubernetes as a secret. Inside lib/utils you can find secret-generator to generate the JWT secret and use it everywhere afterwards.  You can just put that inside secret.env in the auth service and it will be automatically generated for you.
 
 # how to use
+start the agent service first, then case then auth  
+
 3000/api/register
 
 ```
