@@ -293,6 +293,17 @@ app.delete(
         const { id } = req.params;
 
         try {
+            //make sure to delete only when agent doesn't have assigned cases
+            const caseAgent = await pool.query(
+                "SELECT * FROM cases WHERE agent_id=$1 RETURNING *",
+                [id]
+            );
+            if (caseAgent.rowCount >= 1) {
+                res.status(403).json({
+                    message: "this agent is assigned to a case",
+                });
+            }
+
             const result = await pool.query(
                 "DELETE FROM agents WHERE id = $1 RETURNING *",
                 [id]
