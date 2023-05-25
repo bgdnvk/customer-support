@@ -12,6 +12,5 @@ CREATE TABLE cases (
   title VARCHAR(255) NOT NULL,
   description TEXT,
   user_id INTEGER NOT NULL,
-  created_at TIMESTAMP DEFAULT NOW(),
-  CONSTRAINT unique_agent_id UNIQUE (agent_id)
+  created_at TIMESTAMP DEFAULT NOW()
 );

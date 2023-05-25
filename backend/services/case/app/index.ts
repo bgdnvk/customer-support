@@ -137,9 +137,10 @@ app.post("/api/case", verifyCustomer, async (req: Request, res: Response) => {
             case_id: myCase.id,
             title: myCase.title,
             description: myCase.description,
-            customer_id: myCase.user_id
+            customer_id: myCase.user_id,
         };
 
+        //TODO: handle when there are no agents
         const response = await axios.post(url, data, { headers });
         console.log(response.data);
         res.status(201).json(response.data);
@@ -147,8 +148,9 @@ app.post("/api/case", verifyCustomer, async (req: Request, res: Response) => {
         //return inserted case
         // res.status(201).json(rows[0]);
     } catch (err) {
+        //TODO: err when can't assign a case, maybe handle it up not sure
         console.error(err);
-        res.status(500).json({ error: "Internal server error" });
+        res.status(500).json({ error: "Could not assign a case" });
     }
 });
 

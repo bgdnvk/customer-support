@@ -82,6 +82,7 @@ app.post(
       LIMIT 1
     `);
 
+            //TODO: handle no agents available
             const { agent_id } = result.rows[0];
 
             // If agent_id is undefined, throw an error
@@ -102,7 +103,7 @@ app.post(
             await client.query(
                 `
       INSERT INTO cases (case_id, agent_id, title, description, customer_id)
-      VALUES ($1, $2, $3, $4)
+      VALUES ($1, $2, $3, $4, $5)
     `,
                 [case_id, agent_id, title, description, customer_id]
             );
