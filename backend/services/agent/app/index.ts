@@ -232,6 +232,7 @@ app.delete(
 );
 
 // EXTERNAL endpoint
+// when a new user is registered with the role of agent it gets called
 // create agent and make the agent available_agents
 app.post("/api/agent/agents", async (req: Request, res: Response) => {
     console.log("api agent hit");
@@ -258,35 +259,18 @@ app.post("/api/agent/agents", async (req: Request, res: Response) => {
     }
 });
 
-// Add agent
-// app.post("/api/agent/new", verifyAgent, async (req: Request, res: Response) => {
-//     const { user_id, username, name, title, description } = req.body;
-
-//     try {
-//         const result = await pool.query(
-//             "INSERT INTO agents (user_id, username, name, title, description) VALUES ($1, $2, $3, $4, $5) RETURNING *",
-//             [user_id, username, name, title, description]
-//         );
-
-//         res.status(201).json(result.rows[0]);
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).json({ message: "Internal server error" });
-//     }
-// });
-
 // Edit agent
 app.put(
     "/api/agent/agents/:id",
     verifyAdmin,
     async (req: Request, res: Response) => {
         const { id } = req.params;
-        const { user_id, username, name, title, description } = req.body;
+        const { user_id, name, title, description } = req.body;
 
         try {
             const result = await pool.query(
-                "UPDATE agents SET user_id = $1, username = $2, name = $3, title = $4, description = $5 WHERE id = $6 RETURNING *",
-                [user_id, username, name, title, description, id]
+                "UPDATE agents SET user_id = $1, name = $2, title = $3, description = $4 WHERE id = $5 RETURNING *",
+                [user_id, name, title, description, id]
             );
 
             if (result.rowCount === 0) {
