@@ -1,4 +1,4 @@
-cd ../../services/auth/db
+cd ../../backend/services/case/db
 ./builddb.sh
 
 cd ../app
