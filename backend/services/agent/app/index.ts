@@ -24,6 +24,24 @@ const pool = new Pool({
     port: 5432,
 });
 
+//get all cases as an agent
+app.get(
+    "/api/agent/case/",
+    verifyAgent,
+    async (req: Request, res: Response) => {
+        console.log('cases GET')
+        try {
+            const cases = await pool.query("SELECT * FROM cases");
+            console.log('cases', cases)
+            console.log('cases rows', cases.rows)
+
+            res.status(200).json({ message: `CASES: ${cases.rows}` });
+        } catch (e) {
+            res.status(500).json({ message: "internal err" });
+        }
+    }
+);
+
 // With a new case an agent will be assigned
 // the call comes from the customer service that adds a case
 app.post(
@@ -85,33 +103,84 @@ app.post(
     }
 );
 
-// create agent and make the agent available
-app.post(
-    "/api/agent",
+//delete case aka put it as resolved
+app.delete(
+    "/api/agent/case/:caseId",
+    verifyAgent,
     async (req: Request, res: Response) => {
-        console.log('api agent hit')
-        const { user_id, name, title, description } = req.body;
+        const { caseId } = req.params;
 
-        console.log('user id', user_id)
+        const client = await pool.connect();
+
         try {
-            const agentResult = await pool.query(
-                "INSERT INTO agents (user_id, name, title, description) VALUES ($1, $2, $3, $4) RETURNING id",
-                [user_id, name, title, description]
+            await client.query("BEGIN");
+
+            const result = await client.query(
+                `
+        SELECT agent_id
+        FROM cases
+        WHERE case_id = $1
+      `,
+                [caseId]
             );
 
-            const agentId = agentResult.rows[0].id;
+            const { agent_id } = result.rows[0];
 
-            await pool.query("INSERT INTO available (agent_id) VALUES ($1)", [
-                agentId,
-            ]);
+            await client.query(
+                `
+        DELETE FROM cases
+        WHERE case_id = $1
+      `,
+                [caseId]
+            );
 
-            res.status(201).json({ message: "Agent created successfully" });
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({ message: "Internal server error" });
+            await client.query(
+                `
+        INSERT INTO available (agent_id)
+        VALUES ($1)
+      `,
+                [agent_id]
+            );
+
+            await client.query("COMMIT");
+            //TODO: could also update the case on /api/case
+            res.status(204).json({ message: "successfully deleted case" });
+        } catch (err) {
+            await client.query("ROLLBACK");
+            console.error(err);
+            throw new Error(`Failed to remove ${caseId}`);
+        } finally {
+            if (client) {
+                client.release();
+            }
         }
     }
 );
+
+// create agent and make the agent available
+app.post("/api/agent", async (req: Request, res: Response) => {
+    console.log("api agent hit");
+    const { user_id, name, title, description } = req.body;
+
+    console.log("user id", user_id);
+    try {
+        const agentResult = await pool.query(
+            "INSERT INTO agents (user_id, name, title, description) VALUES ($1, $2, $3, $4) RETURNING id",
+            [user_id, name, title, description]
+        );
+
+        const agentId = agentResult.rows[0].id;
+
+        await pool.query("INSERT INTO available (agent_id) VALUES ($1)", [
+            agentId,
+        ]);
+
+        res.status(201).json({ message: "Agent created successfully" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+});
 
 // Add agent
 // app.post("/api/agent/new", verifyAgent, async (req: Request, res: Response) => {
