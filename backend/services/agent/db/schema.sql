@@ -28,4 +28,4 @@ CREATE TABLE resolved_cases (
   customer_id INTEGER,
   agent_id INTEGER REFERENCES agents(id),
   added_at TIMESTAMP DEFAULT NOW()
-)
+);
