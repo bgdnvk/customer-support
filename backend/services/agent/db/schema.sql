@@ -17,7 +17,8 @@ CREATE TABLE cases (
   title VARCHAR(255),
   description VARCHAR(255),
   customer_id INTEGER,
-  agent_id INTEGER REFERENCES agents(id)
+  agent_id INTEGER REFERENCES agents(id),
+  added_at TIMESTAMP DEFAULT NOW()
 );
 
 CREATE TABLE resolved_cases (
@@ -25,5 +26,6 @@ CREATE TABLE resolved_cases (
   title VARCHAR(255),
   description VARCHAR(255),
   customer_id INTEGER,
-  agent_id INTEGER REFERENCES agents(id)
+  agent_id INTEGER REFERENCES agents(id),
+  added_at TIMESTAMP DEFAULT NOW()
 )

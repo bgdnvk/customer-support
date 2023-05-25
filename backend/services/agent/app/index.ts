@@ -59,6 +59,44 @@ app.get("/api/agent/case", verifyAgent, async (req: Request, res: Response) => {
     }
 });
 
+//get all resolved cases as an agent
+app.get(
+    "/api/agent/case/resolved",
+    verifyAgent,
+    async (req: Request, res: Response) => {
+        console.log("resolved cases GET");
+        try {
+            const cases = await pool.query("SELECT * FROM resolved_cases");
+            console.log("cases", cases);
+            console.log("cases rows", cases.rows);
+
+            if (cases.rows.length === 0 || !cases.rows) {
+                res.status(204).send();
+            }
+
+            const casesJSON: string | any = [];
+            for (let i = 0; i < cases.rows.length; i++) {
+                const case_id = cases.rows[i].case_id;
+                const title = cases.rows[i].title;
+                const description = cases.rows[i].description;
+                const agent_id = cases.rows[i].agent_id;
+                const customer_id = cases.rows[i].customer_id;
+
+                casesJSON.push({
+                    case_id,
+                    title,
+                    description,
+                    agent_id,
+                    customer_id,
+                });
+            }
+
+            res.status(200).json({ cases: casesJSON });
+        } catch (e) {
+            res.status(500).json({ message: "err, couldn't get all cases" });
+        }
+    }
+);
 // EXTERNAL endpoint
 // With a new case an agent will be assigned
 // the call comes from the customer service that adds a case
@@ -139,6 +177,7 @@ app.delete(
         try {
             await client.query("BEGIN");
 
+            //TODO: get the entire case info then insert it into resolved_cases
             const result = await client.query(
                 `
         SELECT agent_id
@@ -148,8 +187,11 @@ app.delete(
                 [caseId]
             );
 
-            const { agent_id } = result.rows[0];
+            // get the case info
+            const { case_id, title, description, customer_id, agent_id } =
+                result.rows[0];
 
+            //delete from the on going cases
             await client.query(
                 `
         DELETE FROM cases
@@ -158,6 +200,14 @@ app.delete(
                 [caseId]
             );
 
+            // insert into resolved cases
+            await client.query(
+                `INSERT INTO resolved_cases (case_id, title, description, customer_id, agent_id) 
+                VALUES ($1, $2, $3, $4, $5)`,
+                [case_id, title, description, customer_id, agent_id]
+            );
+
+            //return the agent back into the db of available agents
             await client.query(
                 `
         INSERT INTO available_agents (agent_id)
@@ -167,7 +217,7 @@ app.delete(
             );
 
             await client.query("COMMIT");
-            //TODO: could also update the case on /api/case
+
             res.status(204).json({ message: `deleted ${caseId}` });
         } catch (err) {
             await client.query("ROLLBACK");
