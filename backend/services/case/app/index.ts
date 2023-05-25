@@ -130,47 +130,54 @@ app.post("/api/case", verifyCustomer, async (req: Request, res: Response) => {
         const headers = {
             authorization: `bearer ${token}`,
         };
-        
-        const myCase = rows[0]
-        console.log('case is', myCase)
-        const data = { case_id: myCase.id }
 
+        const myCase = rows[0];
+        console.log("case is", myCase);
+        const data = {
+            case_id: myCase.id,
+            title: myCase.title,
+            description: myCase.description,
+            customer_id: myCase.user_id,
+        };
+
+        //TODO: handle when there are no agents
         const response = await axios.post(url, data, { headers });
         console.log(response.data);
-        res.json(response.data);
+        res.status(201).json(response.data);
 
         //return inserted case
-        res.status(201).json(rows[0]);
+        // res.status(201).json(rows[0]);
     } catch (err) {
+        //TODO: err when can't assign a case, maybe handle it up not sure
         console.error(err);
-        res.status(500).json({ error: "Internal server error" });
+        res.status(500).json({ error: "Could not assign a case" });
     }
 });
 
 // Update an existing case as an agent (resolve it basically)
-app.put("/api/cases/:id", verifyAgent, async (req: Request, res: Response) => {
-    const { id } = req.params;
-    // const { title, description, resolved } = req.body;
-    const { resolved } = req.body;
-    try {
-        // const { rows } = await pool.query(
-        //     "UPDATE cases SET title = $1, description = $2, resolved = $3 WHERE id = $4 RETURNING *",
-        //     [title, description, resolved, id]
-        // );
-        const { rows } = await pool.query(
-            "UPDATE cases SET resolved = $1 WHERE id = $2 RETURNING *",
-            [resolved, id]
-        );
-        if (rows.length === 0) {
-            res.status(404).json({ error: "Case not found" });
-        } else {
-            res.json(rows[0]);
-        }
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "Internal server error" });
-    }
-});
+// app.put("/api/cases/:id", verifyAgent, async (req: Request, res: Response) => {
+//     const { id } = req.params;
+//     // const { title, description, resolved } = req.body;
+//     const { resolved } = req.body;
+//     try {
+//         // const { rows } = await pool.query(
+//         //     "UPDATE cases SET title = $1, description = $2, resolved = $3 WHERE id = $4 RETURNING *",
+//         //     [title, description, resolved, id]
+//         // );
+//         const { rows } = await pool.query(
+//             "UPDATE cases SET resolved = $1 WHERE id = $2 RETURNING *",
+//             [resolved, id]
+//         );
+//         if (rows.length === 0) {
+//             res.status(404).json({ error: "Case not found" });
+//         } else {
+//             res.json(rows[0]);
+//         }
+//     } catch (err) {
+//         console.error(err);
+//         res.status(500).json({ error: "Internal server error" });
+//     }
+// });
 
 // Delete a case by ID
 // app.delete("/cases/:id", async (req: Request, res: Response) => {
