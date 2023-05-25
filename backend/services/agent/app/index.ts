@@ -25,23 +25,20 @@ const pool = new Pool({
 });
 
 //get all cases as an agent
-app.get(
-    "/api/agent/case/",
-    verifyAgent,
-    async (req: Request, res: Response) => {
-        console.log("cases GET");
-        try {
-            const cases = await pool.query("SELECT * FROM cases");
-            console.log("cases", cases);
-            console.log("cases rows", cases.rows);
+app.get("/api/agent/case", verifyAgent, async (req: Request, res: Response) => {
+    console.log("cases GET");
+    try {
+        const cases = await pool.query("SELECT * FROM cases");
+        console.log("cases", cases);
+        console.log("cases rows", cases.rows);
 
-            res.status(200).json({ message: `CASES: ${cases.rows}` });
-        } catch (e) {
-            res.status(500).json({ message: "internal err" });
-        }
+        res.status(200).json({ message: `CASES: ${cases.rows}` });
+    } catch (e) {
+        res.status(500).json({ message: "internal err" });
     }
-);
+});
 
+// EXTERNAL endpoint
 // With a new case an agent will be assigned
 // the call comes from the customer service that adds a case
 app.post(
@@ -157,8 +154,9 @@ app.delete(
     }
 );
 
+// EXTERNAL endpoint
 // create agent and make the agent available
-app.post("/api/agent", async (req: Request, res: Response) => {
+app.post("/api/agent/agents", async (req: Request, res: Response) => {
     console.log("api agent hit");
     const { user_id, name, title, description } = req.body;
 
@@ -226,25 +224,29 @@ app.put(
 );
 
 // Remove agent
-app.delete("/api/agent/agents/:id", async (req: Request, res: Response) => {
-    const { id } = req.params;
+app.delete(
+    "/api/agent/agents/:id",
+    verifyAdmin,
+    async (req: Request, res: Response) => {
+        const { id } = req.params;
 
-    try {
-        const result = await pool.query(
-            "DELETE FROM agents WHERE id = $1 RETURNING *",
-            [id]
-        );
+        try {
+            const result = await pool.query(
+                "DELETE FROM agents WHERE id = $1 RETURNING *",
+                [id]
+            );
 
-        if (result.rowCount === 0) {
-            res.status(404).json({ message: "Agent not found" });
-        } else {
-            res.json({ message: "Agent deleted successfully" });
+            if (result.rowCount === 0) {
+                res.status(404).json({ message: "Agent not found" });
+            } else {
+                res.json({ message: "Agent deleted successfully" });
+            }
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ message: "Internal server error" });
         }
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Internal server error" });
     }
-});
+);
 
 const port = process.env.PORT || 5000;
 

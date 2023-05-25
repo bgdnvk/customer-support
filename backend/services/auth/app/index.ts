@@ -68,8 +68,7 @@ app.post("/api/register", async (req: Request, res: Response) => {
         // transform this into an event
         // if the user is an agent then call the agent service
         if (role === "agent") {
-
-            const url = `http://${process.env.LB_AGENT_SERVICE_HOST}:${process.env.LB_AGENT_SERVICE_PORT}/api/agent`;
+            const url = `http://${process.env.LB_AGENT_SERVICE_HOST}:${process.env.LB_AGENT_SERVICE_PORT}/api/agent/agents`;
             console.log("user is agent");
             const userId = newUser.rows[0].id;
             const data = { user_id: userId };
