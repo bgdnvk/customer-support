@@ -32,7 +32,21 @@ app.get("/api/agent/case", verifyAgent, async (req: Request, res: Response) => {
         console.log("cases", cases);
         console.log("cases rows", cases.rows);
 
-        res.status(200).json({ message: `CASES: ${JSON.stringify(cases.rows)}` });
+        if(cases.rows.length === 0 || !cases.rows) {
+            res.status(204).send()
+        } 
+        
+        const casesJSON: string | any = []
+        for(let i = 0; i < cases.rows.length; i++) {
+            const case_id = cases.rows[i].case_id
+            const agent_id = cases.rows[i].agent_id
+            casesJSON.push({
+                "case_id": case_id,
+                "agent_id": agent_id
+            })
+        }
+
+        res.status(200).json({ cases: casesJSON });
     } catch (e) {
         res.status(500).json({ message: "internal err" });
     }
