@@ -29,11 +29,11 @@ app.get(
     "/api/agent/case/",
     verifyAgent,
     async (req: Request, res: Response) => {
-        console.log('cases GET')
+        console.log("cases GET");
         try {
             const cases = await pool.query("SELECT * FROM cases");
-            console.log('cases', cases)
-            console.log('cases rows', cases.rows)
+            console.log("cases", cases);
+            console.log("cases rows", cases.rows);
 
             res.status(200).json({ message: `CASES: ${cases.rows}` });
         } catch (e) {
