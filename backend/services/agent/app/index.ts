@@ -32,7 +32,7 @@ app.get("/api/agent/case", verifyAgent, async (req: Request, res: Response) => {
         console.log("cases", cases);
         console.log("cases rows", cases.rows);
 
-        res.status(200).json({ message: `CASES: ${cases.rows}` });
+        res.status(200).json({ message: `CASES: ${JSON.stringify(cases.rows)}` });
     } catch (e) {
         res.status(500).json({ message: "internal err" });
     }
@@ -62,6 +62,11 @@ app.post(
     `);
 
             const { agent_id } = result.rows[0];
+
+            // If agent_id is undefined, throw an error
+            if (!agent_id) {
+                throw new Error("No agents available");
+            }
 
             // Delete the agent from the available table
             await client.query(

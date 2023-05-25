@@ -137,10 +137,10 @@ app.post("/api/case", verifyCustomer, async (req: Request, res: Response) => {
 
         const response = await axios.post(url, data, { headers });
         console.log(response.data);
-        res.json(response.data);
+        res.status(201).json(response.data);
 
         //return inserted case
-        res.status(201).json(rows[0]);
+        // res.status(201).json(rows[0]);
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: "Internal server error" });
