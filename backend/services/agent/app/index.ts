@@ -32,18 +32,25 @@ app.get("/api/agent/case", verifyAgent, async (req: Request, res: Response) => {
         console.log("cases", cases);
         console.log("cases rows", cases.rows);
 
-        if(cases.rows.length === 0 || !cases.rows) {
-            res.status(204).send()
-        } 
-        
-        const casesJSON: string | any = []
-        for(let i = 0; i < cases.rows.length; i++) {
-            const case_id = cases.rows[i].case_id
-            const agent_id = cases.rows[i].agent_id
+        if (cases.rows.length === 0 || !cases.rows) {
+            res.status(204).send();
+        }
+
+        const casesJSON: string | any = [];
+        for (let i = 0; i < cases.rows.length; i++) {
+            const case_id = cases.rows[i].case_id;
+            const title = cases.rows[i].title;
+            const description = cases.rows[i].description;
+            const agent_id = cases.rows[i].agent_id;
+            const customer_id = cases.rows[i].customer_id;
+
             casesJSON.push({
-                "case_id": case_id,
-                "agent_id": agent_id
-            })
+                case_id,
+                title,
+                description,
+                agent_id,
+                customer_id,
+            });
         }
 
         res.status(200).json({ cases: casesJSON });
@@ -59,7 +66,7 @@ app.post(
     "/api/agent/case",
     verifyCustomer,
     async (req: Request, res: Response) => {
-        const { case_id } = req.body;
+        const { case_id, title, description, customer_id } = req.body;
         //https://node-postgres.com/features/transactions#asyncawait
         const client = await pool.connect();
 
@@ -70,7 +77,7 @@ app.post(
             // Find the oldest added agent
             const result = await client.query(`
       SELECT agent_id
-      FROM available
+      FROM available_agents
       ORDER BY added_at ASC
       LIMIT 1
     `);
@@ -79,13 +86,13 @@ app.post(
 
             // If agent_id is undefined, throw an error
             if (!agent_id) {
-                throw new Error("No agents available");
+                throw new Error("No agents available_agents");
             }
 
-            // Delete the agent from the available table
+            // Delete the agent from the available_agents table
             await client.query(
                 `
-      DELETE FROM available
+      DELETE FROM available_agents
       WHERE agent_id = $1
     `,
                 [agent_id]
@@ -94,10 +101,10 @@ app.post(
             // Add the case to the cases table
             await client.query(
                 `
-      INSERT INTO cases (case_id, agent_id)
-      VALUES ($1, $2)
+      INSERT INTO cases (case_id, agent_id, title, description, customer_id)
+      VALUES ($1, $2, $3, $4)
     `,
-                [case_id, agent_id]
+                [case_id, agent_id, title, description, customer_id]
             );
 
             // Commit the transaction
@@ -152,7 +159,7 @@ app.delete(
 
             await client.query(
                 `
-        INSERT INTO available (agent_id)
+        INSERT INTO available_agents (agent_id)
         VALUES ($1)
       `,
                 [agent_id]
@@ -160,7 +167,7 @@ app.delete(
 
             await client.query("COMMIT");
             //TODO: could also update the case on /api/case
-            res.status(204).json({ message: "successfully deleted case" });
+            res.status(204).json({ message: `deleted ${caseId}` });
         } catch (err) {
             await client.query("ROLLBACK");
             console.error(err);
@@ -174,7 +181,7 @@ app.delete(
 );
 
 // EXTERNAL endpoint
-// create agent and make the agent available
+// create agent and make the agent available_agents
 app.post("/api/agent/agents", async (req: Request, res: Response) => {
     console.log("api agent hit");
     const { user_id, name, title, description } = req.body;
@@ -188,9 +195,10 @@ app.post("/api/agent/agents", async (req: Request, res: Response) => {
 
         const agentId = agentResult.rows[0].id;
 
-        await pool.query("INSERT INTO available (agent_id) VALUES ($1)", [
-            agentId,
-        ]);
+        await pool.query(
+            "INSERT INTO available_agents (agent_id) VALUES ($1)",
+            [agentId]
+        );
 
         res.status(201).json({ message: "Agent created successfully" });
     } catch (error) {
