@@ -180,7 +180,7 @@ app.delete(
             //TODO: get the entire case info then insert it into resolved_cases
             const result = await client.query(
                 `
-        SELECT agent_id
+        SELECT *
         FROM cases
         WHERE case_id = $1
       `,

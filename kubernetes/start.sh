@@ -1,5 +1,3 @@
-ls
-
 cd ../backend/services/agent
 ./start.sh
 
