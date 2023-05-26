@@ -1,7 +1,7 @@
 'use client'
 import Auth from '@/components/auth'
 import AdminDashboard from '@/components/dashboard/adminDashboard'
-import AgentDashboard from '@/components/dashboard/agentDashboard'
+import { AgentDashboard } from '@/components/dashboard/agentDashboard'
 import { CustomerDashboard } from '@/components/dashboard/customerDashboard'
 import { useState } from 'react'
 
