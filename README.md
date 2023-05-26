@@ -7,6 +7,8 @@ Go into ./kubernetes/images, build all the images in the order it's put then ins
 This will launch the different scripts inside microservices and deploy them in a kubernetes cluster.  
 To stop run the stop.sh script, depending on the system you might want to run it twice.  
 
+That's just for the backend, I haven't set up fully the nextJS frontend so you just need to go into ./frontend and do `npm run dev` after you install everything (there's a docker image so you can run it through docker as well)
+
 ### Issues  
 Due to problems with encoding you might need to copy/paste the scripts, check issues tab.
 
