@@ -3,6 +3,7 @@
 import Login from "@/app/auth/login/page"
 import Register from "@/app/auth/register/page";
 import { useState } from "react"
+import RoleSelector from "./roleSelector";
 
 export default function Auth({setRole}: {setRole: any}) {
     const [session, setSession] = useState<string>(document.cookie)
@@ -13,6 +14,8 @@ export default function Auth({setRole}: {setRole: any}) {
         // window.location.reload();
     }
     
+    console.log('token', session)
+
     return(
         <div>
             {session.length > 1 ? 
@@ -26,6 +29,7 @@ export default function Auth({setRole}: {setRole: any}) {
             </div>
             :
             <div>
+                <RoleSelector setRole={setRole}></RoleSelector>
                 <Login setSession={setSession}></Login>
                 <br></br>
                 <Register></Register>
