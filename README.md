@@ -1,18 +1,4 @@
 # customer-support
-
-### Microservices based architecture w/ decentralized auth + kubernetes
-Auth services implemented  
-Case implemeneted  
-Agent WIP (check issues)  
-
-#### TODO list:  
-finish frontend  
-cleanup/reorganize the microservices(better folder structure and types/interfaces)  
-add tests  
-better way to run/start the project  
-maybe add a getaway  
-maybe add kafka
-
 ## How to run  
 You need Docker and Kubernetes on your system. 
 Generate a JWT secret (check ./backend/lib/utils) and save a secret.env in the ./kubernetes folder.  
@@ -36,6 +22,8 @@ I wanted to include a loadbalancer that would start with /api but instead every 
 PORT: 3000  
 
 POST /api/register to register the user  
+When the user of type (role) agent is registered then there's a POST call to /api/agent/agents to create the agent and make it available (you need to register an agent before being able to create cases otherwise there won't be any agents to assign to your case)
+
 POST /api/login to get the Bearer token  
 
 Using JWT you can register 3 type of users, example:
@@ -51,35 +39,57 @@ The roles are customer, agent and admin. Each microservice has middleware that c
 ### Case Service
 PORT: 4000  
 
-GET /api
+agent GET /api/case  
+get all cases as agent  
 
+customer POST /api/case  
+as customer post a new case that internally will be redirected to the agent service at /api/agent/case and will assign a new agent available (if not return err) - returns 500 for now but will change it  
 
-
-
-
-# how to use
-start the agent service first, then case then auth  
-
-3000/api/register
-
+request body example
 ```
 {
-    "username": "customer",
-    "password": "password",
-    "role": "customer"
+    "title": "case1 title1",
+    "description": "description1"
 }
-```  
-/api/login with your credentials  
-and store the bearer token in the auth header
+```
 
-(make sure to register an agent first)
+### Agent Service
+PORT: 5000
 
-to make a new case there needs to be an agent already
-login and register as a customer then hit POST 4000/api/case
+agent GET /api/agent/case  
+Get all the ongoing cases and their agents 
+example of response  
 ```
 {
-    "title": "title2",
-    "description": "description2"
+    "cases": [
+        {
+            "case_id": 1,
+            "title": "case1 title2",
+            "description": "description1",
+            "agent_id": 1,
+            "customer_id": 2
+        }
+    ]
 }
-```  
-an agent will be added automatically to your case
+```
+
+agent GET /api/agent/case/resolved  
+Get all the resolved cases and their agents
+
+agent DELETE /api/agent/case/:caseId  
+Deletes the ongoing case and puts it in the resolved_cases database, making the assigned agent available again by putting the agent in the available_agents table  
+
+admin PUT /api/agent/agents/:id  
+As an admin you can change everything about the agent (note that the sensible data is handled in the auth db)  
+
+admin DELTE /api/agent/agents/:id  
+Delete the agent, however you can only delete available agents so it doesn't interfere on who's handling the case. Hence you need to close the case the agent is handling before deleting said agent.  
+
+## Notes  
+This project was mainly for me to learn more about Kubernetes and microservices for my [blog](https://bognov.tech/). Therefore the code is a disaster, there are no types/interfaces, or tests, the project needs cleanup, I need to implement better error handling and organize the folder structure, maybe add app/src/controller, /app/src/model, etc.  
+
+### TODOs:
+- Finish the frontend  and integrate it with k8s
+- Decouple microservices through Kafka  
+- Better deployment by only exposing the needed - endpoints  
+- Add a proper getaway  
