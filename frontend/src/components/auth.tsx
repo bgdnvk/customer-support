@@ -4,8 +4,11 @@ import Login from "@/app/auth/login/page"
 import Register from "@/app/auth/register/page";
 import { useState } from "react"
 import RoleSelector from "./roleSelector";
+import { AgentDashboard } from "./dashboard/agentDashboard";
+import { CustomerDashboard } from "./dashboard/customerDashboard";
+import AdminDashboard from "./dashboard/adminDashboard";
 
-export default function Auth({setRole}: {setRole: any}) {
+export default function Auth() {
     const [session, setSession] = useState<string>(document.cookie)
     function handleButton () {
         document.cookie = "CStoken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
@@ -14,15 +17,31 @@ export default function Auth({setRole}: {setRole: any}) {
         // window.location.reload();
     }
     
+    const [role, setRole] = useState<string>('')
     console.log('token', session)
 
+    let dashboardComponent;
+
+    switch (role) {
+      case 'agent':
+        dashboardComponent = <AgentDashboard />;
+        break;
+      case 'customer':
+        dashboardComponent = <CustomerDashboard />;
+        break;
+      case 'admin':
+        dashboardComponent = <AdminDashboard />;
+        break;
+      default:
+        dashboardComponent = <h1> please select a role </h1>;
+        break;
+    }
+    
     return(
         <div>
             {session.length > 1 ? 
             <div>
-                <p>
-                    cookie exists
-                </p>
+                {dashboardComponent}
                 <button onClick={handleButton}>
                     LOG OFF
                 </button>
