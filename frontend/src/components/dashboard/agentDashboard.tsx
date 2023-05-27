@@ -10,6 +10,7 @@ interface Case {
 
 export function AgentDashboard() {
     const [fetchedCases, setFetchedCases] = useState<Array<Case>>([]);
+    const [resolvedCases, setResolvedCases] = useState<Array<Case>>([]);
 
     function getToken() {
         const cookie = document.cookie
@@ -36,6 +37,28 @@ export function AgentDashboard() {
         console.error(error);
       }
     }
+    
+    async function fetchResolvedCases() {
+        const token = getToken()
+      try {
+        const response = await fetch('http://localhost:5000/api/agent/case/resolved', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            }
+        });
+        const data = await response.json();
+        console.log('data from fetch resolved cases', data);
+        if(response.ok) {
+            setResolvedCases(data.cases);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    // useEffect(() => {
+    //   fetchCases()
+    // }, [])
   
     async function handleDelete(caseId: number) {
         const token = getToken()
@@ -56,7 +79,7 @@ export function AgentDashboard() {
     return (
       <div>
         <h2>Agent Dashboard</h2>
-        <button onClick={fetchCases}>Fetch Cases</button>
+        <button onClick={fetchCases}>Fetch Ongoing Cases</button>
         {fetchedCases.length === 0 ? (
           <p>No cases found.</p>
         ) : (
@@ -68,6 +91,22 @@ export function AgentDashboard() {
                 <p>Agent ID: {c.agent_id}</p>
                 <p>Customer ID: {c.customer_id}</p>
                 <button onClick={() => handleDelete(c.case_id)}>Delete</button>
+              </li>
+            ))}
+          </ul>
+        )}
+        
+        <button onClick={fetchResolvedCases}>Fetch RESOLVED Cases</button>
+        {resolvedCases.length === 0 ? (
+          <p>No cases found.</p>
+        ) : (
+          <ul>
+            {resolvedCases.map((c: Case) => (
+              <li key={c.case_id}>
+                <h3>{c.title}</h3>
+                <p>{c.description}</p>
+                <p>Agent ID: {c.agent_id}</p>
+                <p>Customer ID: {c.customer_id}</p>
               </li>
             ))}
           </ul>
