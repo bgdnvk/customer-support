@@ -6,3 +6,6 @@ cd ../case
 
 cd ../auth
 ./start.sh
+
+cd ../../../frontend
+./start.sh
