@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react';
 
-export default function Login({setSession}: {setSession: any}) {
+export default function Login({setSession}: any) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
