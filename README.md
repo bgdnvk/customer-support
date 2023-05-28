@@ -4,6 +4,7 @@
 2) Generate a JWT secret (check ./backend/lib/utils) and save a secret.env in the ./kubernetes folder.  
 3) go into the k8s and build images `bash buildimages.sh`  
 4) start the pods `bash start.sh`  
+5) go to `localhost:8000`  
 
 If you want to stop everything just `bash stop.sh`.  
 
@@ -13,7 +14,12 @@ You can follow the path to every bash script if you want to know how/where it st
 Due to problems with encoding you might need to copy/paste the scripts, check issues tab.
 
 ## Arthitecture 
-![architecture diagram](architecture.png "Arhitecture")
+![architecture diagram](architecture.png "Arhitecture")  
+
+There are 3 type of users: agent, customer and admin.  
+Agents handle open cases by customers (one agent per case) and can resolve the case thus making them available for a new case. Make sure to create an agent and have agents available (without cases) if you want to assign them new cases. Agents can also view current and resolved cases.  
+Customers can make new cases.  
+Admins can edit agents.
 
 ### Folder Organization
 Each microservice consists of ./app where the Node code resides and then ./db where the schema for the PostgreSQL db is. Then you also have Docker files to build the app and db separately, the yaml files are for kubernetes that will start the deployment, service and loadbalancer to expose the endpoints outside. The bash scripts are there to start everything up, I call these bash scripts from ./kubernetes folder.  
