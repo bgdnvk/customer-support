@@ -1,13 +1,13 @@
 # customer-support
 ## How to run  
-You need Docker and Kubernetes on your system. 
-Generate a JWT secret (check ./backend/lib/utils) and save a secret.env in the ./kubernetes folder.  
+1) You need Docker and Kubernetes (up and running). 
+2) Generate a JWT secret (check ./backend/lib/utils) and save a secret.env in the ./kubernetes folder.  
+3) go into the k8s and build images `bash buildimages.sh`  
+4) start the pods `bash start.sh`  
 
-Go into ./kubernetes/images, build all the images in the order it's put then inside ./kubernetes do `bash start.sh`
-This will launch the different scripts inside microservices and deploy them in a kubernetes cluster.  
-To stop run the stop.sh script, depending on the system you might want to run it twice.  
+If you want to stop everything just `bash stop.sh`.  
 
-That's just for the backend, I haven't set up fully the nextJS frontend so you just need to go into ./frontend and do `npm run dev` after you install everything (there's a docker image so you can run it through docker as well)
+You can follow the path to every bash script if you want to know how/where it starts, or if you want to run the different parts separately, just execute the different bash scripts inside each folder.
 
 ### Issues  
 Due to problems with encoding you might need to copy/paste the scripts, check issues tab.
@@ -91,7 +91,6 @@ Delete the agent, however you can only delete available agents so it doesn't int
 This project was mainly for me to learn more about Kubernetes and microservices for my [blog](https://bognov.tech/). Therefore the code is a disaster, there are no types/interfaces, or tests, the project needs cleanup, I need to implement better error handling and organize the folder structure, maybe add app/src/controller, /app/src/model, etc.  
 
 ### TODOs:
-- Finish the frontend  and integrate it with k8s
 - Decouple microservices through Kafka  
 - Better deployment by only exposing the needed - endpoints  
 - Add a proper getaway  

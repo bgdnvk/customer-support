@@ -2,14 +2,23 @@
 
 import Login from "@/app/auth/login/page"
 import Register from "@/app/auth/register/page";
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import RoleSelector from "./roleSelector";
 import { AgentDashboard } from "./dashboard/agentDashboard";
 import { CustomerDashboard } from "./dashboard/customerDashboard";
 import AdminDashboard from "./dashboard/adminDashboard";
 
 export default function Auth() {
-    const [session, setSession] = useState<string>(document.cookie)
+
+    const [session, setSession] = useState<string>('')
+
+    useEffect(() => {
+      if(typeof window !== undefined) {
+        const currCookie: string = document.cookie || '' 
+        setSession(currCookie)
+      }
+    }, [])
+
     function handleButton () {
         document.cookie = "CStoken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
         setSession('');
