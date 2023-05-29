@@ -327,7 +327,7 @@ app.get(
     async (req: Request, res: Response) => {
         try {
             const agents = await pool.query("SELECT * FROM agents");
-            res.json(agents.rows);
+            res.json({ agents: agents.rows });
         } catch (error) {
             console.error(error);
             res.status(500).json({ message: "couldn't get agents" });
