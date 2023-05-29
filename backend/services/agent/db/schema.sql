@@ -8,7 +8,7 @@ CREATE TABLE agents (
 );
 
 CREATE TABLE available_agents (
-  agent_id INTEGER REFERENCES agents(id),
+  agent_id INTEGER REFERENCES agents(id) ON DELETE CASCADE,
   added_at TIMESTAMP DEFAULT NOW()
 );
 

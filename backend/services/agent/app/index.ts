@@ -294,24 +294,27 @@ app.delete(
         try {
             //make sure to delete only when agent doesn't have assigned cases
             const caseAgent = await pool.query(
-                "SELECT * FROM cases WHERE agent_id=$1 RETURNING *",
+                "SELECT * FROM cases WHERE agent_id=$1",
                 [id]
             );
+
             if (caseAgent.rowCount >= 1) {
                 res.status(403).json({
                     message: "this agent is assigned to a case",
                 });
-            }
-
-            const result = await pool.query(
-                "DELETE FROM agents WHERE id = $1 RETURNING *",
-                [id]
-            );
-
-            if (result.rowCount === 0) {
-                res.status(404).json({ message: "Agent not found" });
             } else {
-                res.json({ message: "Agent deleted successfully" });
+                const result = await pool.query(
+                    "DELETE FROM agents WHERE id = $1 RETURNING *",
+                    [id]
+                );
+
+                if (result.rowCount === 0) {
+                    res.status(404).json({
+                        message: "Agent not found",
+                    });
+                }
+                //deleted successfully
+                res.status(204);
             }
         } catch (error) {
             console.error(error);
