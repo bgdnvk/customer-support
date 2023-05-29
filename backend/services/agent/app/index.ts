@@ -177,7 +177,6 @@ app.delete(
         try {
             await client.query("BEGIN");
 
-            //TODO: get the entire case info then insert it into resolved_cases
             const result = await client.query(
                 `
         SELECT *
@@ -317,6 +316,21 @@ app.delete(
         } catch (error) {
             console.error(error);
             res.status(500).json({ message: "Internal server error" });
+        }
+    }
+);
+
+// get agents as admin
+app.get(
+    "/api/agent/agents",
+    verifyAdmin,
+    async (req: Request, res: Response) => {
+        try {
+            const agents = await pool.query("SELECT * FROM agents");
+            res.json(agents.rows);
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ message: "couldn't get agents" });
         }
     }
 );
