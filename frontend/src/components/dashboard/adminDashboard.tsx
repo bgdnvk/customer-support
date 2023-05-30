@@ -1,17 +1,6 @@
+import getToken from "@/lib/utils";
+import { Agent, Edit } from "@/types/types";
 import { FormEvent, useEffect, useState } from "react";
-
-interface Agent {
-    id: number;
-    user_id: number;
-    name: string | null;
-    title: string | null;
-    description: string | null;
-}
-
-interface Edit {
-    flag: boolean;
-    agent: Agent | null;
-}
 
 export default function AdminDashboard() {
 
@@ -23,17 +12,10 @@ export default function AdminDashboard() {
     })
     const [updateAgent, setUpdateAgent] = useState<Agent>()
 
-    function getToken() {
-        const cookie = document.cookie
-        const token = cookie.substring(8)
-        console.log('cookie token', token)
-        return token
-    }
-    
     useEffect(() => {
         const myToken = getToken()
         setToken(myToken)
-    }, [token, agents])
+    }, [token])
 
     async function fetchAgents() {
         console.log('token from admin dashboard', token)
