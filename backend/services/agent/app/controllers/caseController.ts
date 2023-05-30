@@ -11,29 +11,11 @@ export const getCases = async (req: Request, res: Response) => {
         console.log("cases rows", cases.rows);
 
         if (cases.rows.length === 0 || !cases.rows) {
-            res.status(204).send();
+            res.status(204).json({ message: "no cases" });
         } else {
             const casesJSON = casesToJSON(cases);
             res.status(200).json({ cases: casesJSON });
         }
-
-        // const casesJSON: string | any = [];
-        // for (let i = 0; i < cases.rows.length; i++) {
-        //     const case_id = cases.rows[i].case_id;
-        //     const title = cases.rows[i].title;
-        //     const description = cases.rows[i].description;
-        //     const agent_id = cases.rows[i].agent_id;
-        //     const customer_id = cases.rows[i].customer_id;
-
-        //     casesJSON.push({
-        //         case_id,
-        //         title,
-        //         description,
-        //         agent_id,
-        //         customer_id,
-        //     });
-        // }
-        // res.status(200).json({ cases: casesJSON });
     } catch (e) {
         res.status(500).json({ message: "internal err" });
     }
@@ -48,29 +30,11 @@ export const getResolvedCases = async (req: Request, res: Response) => {
         console.log("cases rows", cases.rows);
 
         if (cases.rows.length === 0 || !cases.rows) {
-            res.status(204).send();
+            res.status(204).json({ message: "no cases" });
         } else {
             const casesJSON = casesToJSON(cases);
             res.status(200).json({ cases: casesJSON });
         }
-        // const casesJSON: string | any = [];
-        // for (let i = 0; i < cases.rows.length; i++) {
-        //     const case_id = cases.rows[i].case_id;
-        //     const title = cases.rows[i].title;
-        //     const description = cases.rows[i].description;
-        //     const agent_id = cases.rows[i].agent_id;
-        //     const customer_id = cases.rows[i].customer_id;
-
-        //     casesJSON.push({
-        //         case_id,
-        //         title,
-        //         description,
-        //         agent_id,
-        //         customer_id,
-        //     });
-        // }
-
-        // res.status(200).json({ cases: casesJSON });
     } catch (e) {
         res.status(500).json({ message: "err, couldn't get all cases" });
     }
