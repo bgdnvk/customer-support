@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 
 interface Agent {
     id: number;
@@ -8,10 +8,20 @@ interface Agent {
     description: string | null;
 }
 
+interface Edit {
+    flag: boolean;
+    agent: Agent | null;
+}
+
 export default function AdminDashboard() {
 
     const [agents, setAgents] = useState<Array<Agent>>([])
     const [token, setToken] = useState('')
+    const [edit, setEdit] = useState<Edit>({
+        flag: false,
+        agent: null
+    })
+    const [updateAgent, setUpdateAgent] = useState<Agent>()
 
     function getToken() {
         const cookie = document.cookie
@@ -23,7 +33,7 @@ export default function AdminDashboard() {
     useEffect(() => {
         const myToken = getToken()
         setToken(myToken)
-    }, [token])
+    }, [token, agents])
 
     async function fetchAgents() {
         console.log('token from admin dashboard', token)
@@ -45,22 +55,32 @@ export default function AdminDashboard() {
     }
     
     async function handleDelete(id: number) {
+
         console.log('deleting', id)
+        const newAgents = agents.filter((a) => a.id !== id)
+        console.log('new Agents', newAgents)
+        setAgents(newAgents)
+
         try {
-            const response = await fetch(`http://localhost:5000/api/agent/agents/${id}`, {
+            await fetch(`http://localhost:5000/api/agent/agents/${id}`, {
                 method: 'DELETE',
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
             })
-            console.log('response', response)
-            const data = await response.json()
-            
         } catch (e) {
-
+            console.error(e)
         }
-        const newAgents = agents.filter((a) => a.id !== id)
-
+    }
+    
+    function editAgent(agent: Agent) {
+        setEdit({agent: agent, flag : true})
+        setUpdateAgent(agent)
+    }
+    
+    async function handleForm(e: FormEvent<HTMLFormElement>) {
+        e.preventDefault()
+        console.log('agent is', updateAgent)
     }
     
     return(
@@ -77,10 +97,58 @@ export default function AdminDashboard() {
                             <p>ID: {a.id}</p>
                             <p>user ID: {a.user_id}</p>
                             <button onClick={() => handleDelete(a.id)}>delete agent {a.name}</button>
+                            <button onClick={() => editAgent(a)}>edit this agent</button>
                         </li>
                     ))}
                 </ul>
             )}
+            {edit.flag ? (
+                <form onSubmit={(e) => handleForm(e)}>
+                    <label>
+                        Title:
+                        <input
+                        type="text"
+                        value={updateAgent?.title|| ''}
+                        onChange={(e) => {
+                            setUpdateAgent({
+                                ...updateAgent!,
+                                title: e.target.value,
+                            })
+                        }}
+                        ></input>
+                    </label>
+                    <label>
+                        Name:
+                        <input
+                        type="text"
+                        value={updateAgent?.name || ''}
+                        onChange={(e) => {
+                            setUpdateAgent({
+                                ...updateAgent!,
+                                name: e.target.value,
+                            })
+                        }}
+                        ></input>
+                    </label>
+                    <label>
+                        Description:
+                        <input
+                        type="text"
+                        value={updateAgent?.description|| ''}
+                        onChange={(e) => {
+                            setUpdateAgent({
+                                ...updateAgent!,
+                                description: e.target.value,
+                            })
+                        }}
+                        ></input>
+                    </label>
+                    <button type="submit"> update Agent</button>
+                </form>
+            ): (
+                null
+            )}
+            <br></br>
             <button onClick={fetchAgents}>getAgents</button>
         </div>
     )
