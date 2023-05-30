@@ -177,7 +177,6 @@ app.delete(
         try {
             await client.query("BEGIN");
 
-            //TODO: get the entire case info then insert it into resolved_cases
             const result = await client.query(
                 `
         SELECT *
@@ -265,12 +264,12 @@ app.put(
     verifyAdmin,
     async (req: Request, res: Response) => {
         const { id } = req.params;
-        const { user_id, name, title, description } = req.body;
+        const { name, title, description } = req.body;
 
         try {
             const result = await pool.query(
-                "UPDATE agents SET user_id = $1, name = $2, title = $3, description = $4 WHERE id = $5 RETURNING *",
-                [user_id, name, title, description, id]
+                "UPDATE agents SET name = $1, title = $2, description = $3 WHERE id = $4 RETURNING *",
+                [name, title, description, id]
             );
 
             if (result.rowCount === 0) {
@@ -295,28 +294,46 @@ app.delete(
         try {
             //make sure to delete only when agent doesn't have assigned cases
             const caseAgent = await pool.query(
-                "SELECT * FROM cases WHERE agent_id=$1 RETURNING *",
+                "SELECT * FROM cases WHERE agent_id=$1",
                 [id]
             );
+
             if (caseAgent.rowCount >= 1) {
                 res.status(403).json({
                     message: "this agent is assigned to a case",
                 });
-            }
-
-            const result = await pool.query(
-                "DELETE FROM agents WHERE id = $1 RETURNING *",
-                [id]
-            );
-
-            if (result.rowCount === 0) {
-                res.status(404).json({ message: "Agent not found" });
             } else {
-                res.json({ message: "Agent deleted successfully" });
+                const result = await pool.query(
+                    "DELETE FROM agents WHERE id = $1 RETURNING *",
+                    [id]
+                );
+
+                if (result.rowCount === 0) {
+                    res.status(404).json({
+                        message: "Agent not found",
+                    });
+                }
+                //deleted successfully
+                res.status(204);
             }
         } catch (error) {
             console.error(error);
             res.status(500).json({ message: "Internal server error" });
+        }
+    }
+);
+
+// get agents as admin
+app.get(
+    "/api/agent/agents",
+    verifyAdmin,
+    async (req: Request, res: Response) => {
+        try {
+            const agents = await pool.query("SELECT * FROM agents");
+            res.json({ agents: agents.rows });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ message: "couldn't get agents" });
         }
     }
 );
