@@ -1,75 +1,203 @@
-import express from "express";
+import express, { Request, Response } from "express";
+import { Pool } from "pg";
+import { verifyAgent, verifyCustomer } from "./middleware";
+import axios from "axios";
+import { get } from "http";
 import cors from "cors";
-import { verifyAdmin, verifyAgent, verifyCustomer, verifyUser } from "./middleware";
+
+const pool = new Pool({
+    user: "admin",
+    host: process.env.POSTGRES_CASE_SERVICE_HOST,
+    database: "postgres",
+    password: "password",
+    port: 5432,
+});
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-interface Case {
-    id: number;
-    title: string;
-    description: string;
-}
+app.get("/api/test", async (req: Request, res: Response) => {
+    console.log("test hit");
 
-let cases: Case[] = [
-    { id: 1, title: "Case 1", description: "This is case 1" },
-    { id: 2, title: "Case 2", description: "This is case 2" },
-    { id: 3, title: "Case 3", description: "This is case 3" },
-];
+    // const url = "http://localhost:5000/api/test";LB_AGENT_SERVICE_HOST
+    const url = `http://${process.env.LB_AGENT_SERVICE_HOST}:${process.env.LB_AGENT_SERVICE_PORT}/api/agent/test`;
+    console.log(url);
 
-app.get("/verify", verifyUser, (req, res) => {
-    res.json("success")
-})
+    const token = req.headers.authorization?.split(" ")[1];
 
-app.get("/verify/customer", verifyCustomer, (req, res) => {
-    res.json("customer verified")
-})
+    console.log("token", token);
+    const headers = {
+        authorization: `bearer ${token}`,
+    };
 
-app.get("/verify/agent", verifyAgent, (req, res) => {
-    res.json("agent verified")
-})
-
-app.get("/verify/admin", verifyAdmin, (req, res) => {
-    res.json("admin verified")
-})
-
-app.get("/cases", (req, res) => {
-    res.json(cases);
-});
-
-app.post("/cases", (req, res) => {
-    const { title, description } = req.body;
-    const id = cases.length + 1;
-    const newCase = { id, title, description };
-    cases.push(newCase);
-    res.json(newCase);
-});
-
-app.put("/cases/:id", (req, res) => {
-    const id = parseInt(req.params.id);
-    const { title, description } = req.body;
-    const index = cases.findIndex((c) => c.id === id);
-    if (index !== -1) {
-        cases[index] = { id, title, description };
-        res.json(cases[index]);
-    } else {
-        res.status(404).json({ message: `Case with id ${id} not found` });
+    try {
+        const response = await axios.get(url, { headers });
+        console.log(response.data);
+        res.json(response.data);
+    } catch (e) {
+        console.log("err", e);
     }
 });
 
-app.delete("/cases/:id", (req, res) => {
-    const id = parseInt(req.params.id);
-    const index = cases.findIndex((c) => c.id === id);
-    if (index !== -1) {
-        cases.splice(index, 1);
-        res.json({ message: `Case with id ${id} deleted` });
-    } else {
-        res.status(404).json({ message: `Case with id ${id} not found` });
+// app.get("/api/test", async (req: Request, res: Response) => {
+//   console.log("test hit");
+
+//   const url = "http://localhost:5000/api/test";
+
+//   const token = req.headers.authorization?.split(" ")[1];
+
+//   console.log("token", token);
+//   const headers = {
+//     Authorization: `Bearer ${token}`,
+//   };
+
+//   const options = {
+//     headers,
+//   };
+
+//   const request = get(url, options, (response) => {
+//     let data = "";
+
+//     response.on("data", (chunk) => {
+//       data += chunk;
+//     });
+
+//     response.on("end", () => {
+//       console.log(data);
+//       res.json(JSON.parse(data));
+//     });
+//   });
+
+//   request.on("error", (error) => {
+//     console.error(error);
+//     res.status(500).send("Internal Server Error");
+//   });
+
+//   request.end();
+// });
+
+// Get all cases as an agent
+app.get("/api/case", verifyAgent, async (req: Request, res: Response) => {
+    try {
+        const { rows } = await pool.query("SELECT * FROM cases");
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Internal server error" });
     }
 });
 
-const port = process.env.PORT || 4000;
-app.listen(port, () => {
-    console.log(`Server listening on port ${port}`);
+// Get a single case by ID
+// app.get("/cases/:id", async (req: Request, res: Response) => {
+//     const { id } = req.params;
+//     try {
+//         const { rows } = await pool.query("SELECT * FROM cases WHERE id = $1", [
+//             id,
+//         ]);
+//         if (rows.length === 0) {
+//             res.status(404).json({ error: "Case not found" });
+//         } else {
+//             res.json(rows[0]);
+//         }
+//     } catch (err) {
+//         console.error(err);
+//         res.status(500).json({ error: "Internal server error" });
+//     }
+// });
+
+// Create a new case as a customer
+// TODO:
+app.post("/api/case", verifyCustomer, async (req: Request, res: Response) => {
+    console.log("case hit");
+    const { title, description, payload } = req.body;
+    const user_id = payload.userId;
+    try {
+        const { rows } = await pool.query(
+            "INSERT INTO cases (title, description, user_id) VALUES ($1, $2, $3) RETURNING *",
+            [title, description, user_id]
+        );
+
+        //pass the case to /api/agent
+
+        const url = `http://${process.env.LB_AGENT_SERVICE_HOST}:${process.env.LB_AGENT_SERVICE_PORT}/api/agent/case`;
+        // const url = `http://${process.env.lb_agent_service_host}:${process.env.lb_agent_service_port}/api/agent/case`;
+        console.log(url);
+
+        const token = req.headers.authorization?.split(" ")[1];
+
+        console.log("token", token);
+        const headers = {
+            authorization: `bearer ${token}`,
+        };
+
+        const myCase = rows[0];
+        console.log("case is", myCase);
+        const data = {
+            case_id: myCase.id,
+            title: myCase.title,
+            description: myCase.description,
+            customer_id: myCase.user_id,
+        };
+
+        //TODO: handle when there are no agents
+        const response = await axios.post(url, data, { headers });
+        console.log(response.data);
+        res.status(201).json(response.data);
+
+        //return inserted case
+        // res.status(201).json(rows[0]);
+    } catch (err) {
+        //TODO: err when can't assign a case, maybe handle it up not sure
+        console.error(err);
+        res.status(500).json({ error: "Could not assign a case" });
+    }
+});
+
+// Update an existing case as an agent (resolve it basically)
+// app.put("/api/cases/:id", verifyAgent, async (req: Request, res: Response) => {
+//     const { id } = req.params;
+//     // const { title, description, resolved } = req.body;
+//     const { resolved } = req.body;
+//     try {
+//         // const { rows } = await pool.query(
+//         //     "UPDATE cases SET title = $1, description = $2, resolved = $3 WHERE id = $4 RETURNING *",
+//         //     [title, description, resolved, id]
+//         // );
+//         const { rows } = await pool.query(
+//             "UPDATE cases SET resolved = $1 WHERE id = $2 RETURNING *",
+//             [resolved, id]
+//         );
+//         if (rows.length === 0) {
+//             res.status(404).json({ error: "Case not found" });
+//         } else {
+//             res.json(rows[0]);
+//         }
+//     } catch (err) {
+//         console.error(err);
+//         res.status(500).json({ error: "Internal server error" });
+//     }
+// });
+
+// Delete a case by ID
+// app.delete("/cases/:id", async (req: Request, res: Response) => {
+//     const { id } = req.params;
+//     try {
+//         const { rows } = await pool.query(
+//             "DELETE FROM cases WHERE id = $1 RETURNING *",
+//             [id]
+//         );
+//         if (rows.length === 0) {
+//             res.status(404).json({ error: "Case not found" });
+//         } else {
+//             res.json(rows[0]);
+//         }
+//     } catch (err) {
+//         console.error(err);
+//         res.status(500).json({ error: "Internal server error" });
+//     }
+// });
+
+app.listen(4000, () => {
+    console.log("Server listening on port 4000");
 });
