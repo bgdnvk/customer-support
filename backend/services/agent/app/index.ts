@@ -264,12 +264,12 @@ app.put(
     verifyAdmin,
     async (req: Request, res: Response) => {
         const { id } = req.params;
-        const { user_id, name, title, description } = req.body;
+        const { name, title, description } = req.body;
 
         try {
             const result = await pool.query(
-                "UPDATE agents SET user_id = $1, name = $2, title = $3, description = $4 WHERE id = $5 RETURNING *",
-                [user_id, name, title, description, id]
+                "UPDATE agents SET name = $1, title = $2, description = $3 WHERE id = $4 RETURNING *",
+                [name, title, description, id]
             );
 
             if (result.rowCount === 0) {

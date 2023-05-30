@@ -81,6 +81,22 @@ export default function AdminDashboard() {
     async function handleForm(e: FormEvent<HTMLFormElement>) {
         e.preventDefault()
         console.log('agent is', updateAgent)
+        try {
+            await fetch(`http://localhost:5000/api/agent/agents/${updateAgent?.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    name: updateAgent?.name,
+                    description: updateAgent?.description,
+                    title: updateAgent?.title
+                })
+            })
+        } catch (e) {
+            console.error(e)
+        }
     }
     
     return(
@@ -93,6 +109,7 @@ export default function AdminDashboard() {
                     {agents.map((a: Agent) => (
                         <li key={a.id}>
                             <h3>name: {a.name}</h3>
+                            <p>title: {a.title}</p>
                             <p>description: {a.description}</p>
                             <p>ID: {a.id}</p>
                             <p>user ID: {a.user_id}</p>
