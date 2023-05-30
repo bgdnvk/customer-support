@@ -1,23 +1,10 @@
+import getToken from '@/lib/utils';
+import { Case } from '@/types/types';
 import { useState, useEffect } from 'react';
-
-interface Case {
-  case_id: number;
-  title: string;
-  description: string;
-  agent_id: number;
-  customer_id: number;
-}
 
 export function AgentDashboard() {
     const [fetchedCases, setFetchedCases] = useState<Array<Case>>([]);
     const [resolvedCases, setResolvedCases] = useState<Array<Case>>([]);
-
-    function getToken() {
-        const cookie = document.cookie
-        const token = cookie.substring(8)
-        console.log('token agent', token)
-        return token
-    }
 
     async function fetchCases() {
         const token = getToken()
@@ -56,9 +43,6 @@ export function AgentDashboard() {
         console.error(error);
       }
     }
-    // useEffect(() => {
-    //   fetchCases()
-    // }, [])
   
     async function handleDelete(caseId: number) {
         const token = getToken()
@@ -90,7 +74,7 @@ export function AgentDashboard() {
                 <p>{c.description}</p>
                 <p>Agent ID: {c.agent_id}</p>
                 <p>Customer ID: {c.customer_id}</p>
-                <button onClick={() => handleDelete(c.case_id)}>Delete</button>
+                <button onClick={() => handleDelete(c.case_id)}>Resolve</button>
               </li>
             ))}
           </ul>
