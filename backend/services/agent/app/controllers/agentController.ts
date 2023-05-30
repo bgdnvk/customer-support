@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { pool } from "../db/pool";
 
+//create a new agent and add it to the available list
 export const createAgent = async (req: Request, res: Response) => {
     console.log("api agent hit");
     const { user_id, name, title, description } = req.body;
@@ -26,6 +27,7 @@ export const createAgent = async (req: Request, res: Response) => {
     }
 };
 
+// get all agents regardless if they are busy or not
 export const getAgents = async (req: Request, res: Response) => {
     try {
         const agents = await pool.query("SELECT * FROM agents");
@@ -36,6 +38,8 @@ export const getAgents = async (req: Request, res: Response) => {
     }
 };
 
+// update the agent
+// note that you can't update the id or the username
 export const editAgent = async (req: Request, res: Response) => {
     const { id } = req.params;
     const { name, title, description } = req.body;
